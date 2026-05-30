@@ -54,7 +54,12 @@ create policy "anyone can insert reports"
   );
 
 -- Enable realtime so the map can update live.
-alter publication supabase_realtime add table reports;
+do $$ begin
+  alter publication supabase_realtime add table reports;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;
 
 -- Simple per-fingerprint rate limit: at most 30 reports per device per hour.
 create or replace function enforce_report_rate_limit()

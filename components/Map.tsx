@@ -22,7 +22,7 @@ const FALLBACK_STYLE: maplibregl.StyleSpecification = {
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
-export default function Map() {
+export default function OutageMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
@@ -47,9 +47,34 @@ export default function Map() {
       }),
       "top-right"
     );
+
+    let usingFallback = !key;
+    map.on("error", (e) => {
+      const msg = e?.error?.message || String(e?.error || e);
+      console.warn("[MapLibre]", msg);
+      if (!usingFallback && /style|401|403|fetch/i.test(msg)) {
+        usingFallback = true;
+        console.warn("[MapLibre] MapTiler style failed, swapping to OSM raster fallback.");
+        map.setStyle(FALLBACK_STYLE);
+      }
+    });
+
+    const forceResize = () => {
+      if (mapRef.current) mapRef.current.resize();
+    };
+    map.on("load", () => requestAnimationFrame(forceResize));
+    const t1 = setTimeout(forceResize, 100);
+    const t2 = setTimeout(forceResize, 500);
+
+    const ro = new ResizeObserver(forceResize);
+    ro.observe(containerRef.current);
+
     mapRef.current = map;
 
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
       markersRef.current.clear();
@@ -127,9 +152,13 @@ export default function Map() {
   }, []);
 
   return (
-    <div className="relative flex-1">
-      <div ref={containerRef} className="absolute inset-0" />
-      <div className="absolute top-3 left-3 bg-white/95 backdrop-blur rounded-lg px-3 py-2 shadow text-xs font-medium">
+    <div className="relative w-full">
+      <div
+        ref={containerRef}
+        className="w-full bg-slate-200"
+        style={{ height: "calc(100dvh - 3.5rem)" }}
+      />
+      <div className="absolute top-3 left-3 bg-white/95 backdrop-blur rounded-lg px-3 py-2 shadow text-xs font-medium z-10">
         <span className="text-alert-500">●</span> {count} active report{count === 1 ? "" : "s"}
       </div>
     </div>

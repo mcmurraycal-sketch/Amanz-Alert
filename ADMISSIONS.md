@@ -26,8 +26,7 @@ Update weekly once launched.
 
 | Date       | Users (unique fingerprints) | Reports submitted | Active reports | Municipalities covered | Notes |
 |------------|------------------------------|-------------------|----------------|------------------------|-------|
-| 2026-05-30 | 0                            | 0                 | 0              | 0                      | Build kickoff. |
-|            |                              |                   |                |                        |       |
+| 2026-05-30 | 1 (me)                       | 1                 | 1              | 1 (Makhanda)           | MVP shipped end-to-end on localhost. First report submitted, appeared on map via realtime in ~1 second. Stack: Next.js PWA + Supabase + MapLibre. |
 
 ---
 
@@ -37,6 +36,8 @@ The narrative-rich version of the metrics. Each entry: date, what happened, what
 
 > Example (don't use, write your own):
 > **2026-06-12** — First real report from someone I don't know. A woman in Joza, Makhanda, marked "no water" at 6:47am. I refreshed the map and there was a red dot I hadn't placed. Realised I'd built something other people use.
+
+**2026-05-30** — Day 1. Shipped a working MVP end-to-end: opened the map in a browser, tapped "Report an outage," allowed location, picked "No water at all," submitted. The dot appeared on the map a second later. Postgres confirmed the row. *(Edit this in your own voice — what did it feel like? What did you not expect? Did anything almost not work?)*
 
 ---
 
