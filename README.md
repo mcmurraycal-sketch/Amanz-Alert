@@ -65,7 +65,8 @@ This downloads Next.js, Supabase client, MapLibre, etc. into `node_modules/`. Ta
 1. In your Supabase project, go to **SQL Editor** → **New query**.
 2. Copy the contents of `supabase/migrations/0001_init.sql` from this repo.
 3. Paste and click **Run**.
-4. Confirm: in **Table Editor** you should see a `reports` table.
+4. Open a **new query**, paste the contents of `supabase/migrations/0002_confirmations.sql`, click **Run**.
+5. Confirm: in **Table Editor** you should see `reports` AND `report_confirmations` tables.
 
 ### 5. Get your API keys
 

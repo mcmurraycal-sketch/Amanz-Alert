@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
-import { EASTERN_CAPE_CENTER } from "@/lib/geo";
+import { EASTERN_CAPE_CENTER, getOrCreateFingerprint } from "@/lib/geo";
+import { buildWhatsAppShare } from "@/lib/share";
 import { Report, SEVERITY_COLOR, SEVERITY_LABEL } from "@/lib/types";
 
 const MAP_STYLE = (key: string) =>
@@ -86,6 +87,15 @@ export default function OutageMap() {
     if (!map) return;
     const supabase = getBrowserSupabase();
 
+    const removeMarker = (id: string) => {
+      const m = markersRef.current.get(id);
+      if (m) {
+        m.remove();
+        markersRef.current.delete(id);
+        setCount((c) => Math.max(0, c - 1));
+      }
+    };
+
     const addOrUpdate = (r: Report) => {
       if (markersRef.current.has(r.id)) return;
       const el = document.createElement("div");
@@ -96,15 +106,9 @@ export default function OutageMap() {
       el.style.border = "2px solid white";
       el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
 
-      const popup = new Popup({ offset: 14, closeButton: false }).setHTML(`
-        <strong>${SEVERITY_LABEL[r.severity]}</strong><br/>
-        <span style="color:#475569;font-size:12px">${
-          r.suburb ? r.suburb + ", " : ""
-        }${r.municipality || ""}</span><br/>
-        <span style="color:#94a3b8;font-size:11px">${new Date(r.created_at).toLocaleString()}</span>
-        ${r.note ? `<p style="margin-top:6px;font-size:13px">${escapeHTML(r.note)}</p>` : ""}
-      `);
-
+      const popup = new Popup({ offset: 14, closeButton: false }).setDOMContent(
+        buildPopupContent(r, supabase)
+      );
       const marker = new Marker({ element: el })
         .setLngLat([r.lng, r.lat])
         .setPopup(popup)
@@ -143,6 +147,14 @@ export default function OutageMap() {
           }
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "reports" },
+        (payload) => {
+          const next = payload.new as { id: string; resolved_at: string | null };
+          if (next.resolved_at) removeMarker(next.id);
+        }
+      )
       .subscribe();
 
     return () => {
@@ -169,4 +181,85 @@ function escapeHTML(s: string) {
   return s.replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string)
   );
+}
+
+type SupabaseClient = ReturnType<typeof getBrowserSupabase>;
+
+function buildPopupContent(r: Report, supabase: SupabaseClient): HTMLElement {
+  const root = document.createElement("div");
+  root.style.minWidth = "200px";
+  root.style.fontFamily = "inherit";
+
+  const shareUrl = buildWhatsAppShare({
+    suburb: r.suburb,
+    municipality: r.municipality,
+    severity: r.severity,
+  });
+
+  root.innerHTML = `
+    <strong>${SEVERITY_LABEL[r.severity]}</strong><br/>
+    <span style="color:#475569;font-size:12px">${
+      r.suburb ? escapeHTML(r.suburb) + ", " : ""
+    }${r.municipality ? escapeHTML(r.municipality) : ""}</span><br/>
+    <span style="color:#94a3b8;font-size:11px">${new Date(r.created_at).toLocaleString()}</span>
+    ${r.note ? `<p style="margin-top:6px;font-size:13px">${escapeHTML(r.note)}</p>` : ""}
+  `;
+
+  const btnRow = document.createElement("div");
+  btnRow.style.display = "flex";
+  btnRow.style.gap = "6px";
+  btnRow.style.marginTop = "10px";
+
+  const makeBtn = (
+    label: string,
+    kind: "still_out" | "resolved",
+    bg: string,
+    fg: string
+  ) => {
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.style.flex = "1";
+    btn.style.padding = "6px 8px";
+    btn.style.borderRadius = "6px";
+    btn.style.border = "1px solid #e2e8f0";
+    btn.style.background = bg;
+    btn.style.color = fg;
+    btn.style.fontSize = "12px";
+    btn.style.fontWeight = "500";
+    btn.style.cursor = "pointer";
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.style.opacity = "0.6";
+      const { error } = await supabase.from("report_confirmations").insert({
+        report_id: r.id,
+        kind,
+        reporter_fingerprint: getOrCreateFingerprint(),
+      });
+      btn.textContent = error ? "Already counted" : "✓ Counted";
+    };
+    return btn;
+  };
+
+  btnRow.appendChild(makeBtn("Still out", "still_out", "#FEF3F2", "#B83820"));
+  btnRow.appendChild(makeBtn("Water's back", "resolved", "#ECFDF5", "#15803D"));
+  root.appendChild(btnRow);
+
+  const share = document.createElement("a");
+  share.href = shareUrl;
+  share.target = "_blank";
+  share.rel = "noopener noreferrer";
+  share.style.display = "block";
+  share.style.marginTop = "8px";
+  share.style.background = "#25D366";
+  share.style.color = "white";
+  share.style.padding = "6px 10px";
+  share.style.borderRadius = "6px";
+  share.style.fontSize = "12px";
+  share.style.textDecoration = "none";
+  share.style.fontWeight = "600";
+  share.style.textAlign = "center";
+  share.textContent = "📲 Share on WhatsApp";
+  root.appendChild(share);
+
+  return root;
 }

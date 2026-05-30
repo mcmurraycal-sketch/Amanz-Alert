@@ -1,18 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { Coords, getCurrentLocation, getOrCreateFingerprint, MAKHANDA } from "@/lib/geo";
-import { Severity, SEVERITY_LABEL } from "@/lib/types";
+import { reverseGeocode, formatLocation, type GeoLabel } from "@/lib/geocode";
+import { buildWhatsAppShare } from "@/lib/share";
+import { useT } from "@/lib/i18n";
+import { Severity } from "@/lib/types";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
 
 export default function ReportForm() {
-  const router = useRouter();
+  const { t } = useT();
   const [coords, setCoords] = useState<Coords | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [locating, setLocating] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [label, setLabel] = useState<GeoLabel | null>(null);
   const [severity, setSeverity] = useState<Severity>("no_water");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -36,6 +41,17 @@ export default function ReportForm() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!coords) return;
+    let cancelled = false;
+    reverseGeocode(coords.lat, coords.lng).then((l) => {
+      if (!cancelled) setLabel(l);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [coords]);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!coords) return;
@@ -48,20 +64,53 @@ export default function ReportForm() {
         lng: coords.lng,
         severity,
         note: note.trim() || null,
+        suburb: label?.suburb || null,
+        municipality: label?.municipality || null,
         reporter_fingerprint: getOrCreateFingerprint(),
       });
       if (error) throw error;
-      router.push("/?submitted=1");
+      setSubmitted(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong.");
       setSubmitting(false);
     }
   };
 
+  if (submitted) {
+    const shareUrl = buildWhatsAppShare({
+      suburb: label?.suburb,
+      municipality: label?.municipality,
+      severity,
+    });
+    return (
+      <div className="flex flex-col gap-5 text-center py-8">
+        <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl">
+          ✓
+        </div>
+        <h2 className="text-2xl font-bold">{t("report.thanks_title")}</h2>
+        <p className="text-ink/70">{t("report.thanks_body")}</p>
+        <a
+          href={shareUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-600 hover:bg-green-700 active:scale-95 transition text-white font-semibold rounded-lg py-4 px-6 flex items-center justify-center gap-2"
+        >
+          <span aria-hidden>📲</span> {t("report.share_whatsapp")}
+        </a>
+        <Link
+          href="/"
+          className="text-amanzi-600 underline text-sm"
+        >
+          {t("report.back_to_map")}
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <fieldset className="flex flex-col gap-2">
-        <legend className="font-semibold mb-1">What&apos;s happening?</legend>
+        <legend className="font-semibold mb-1">{t("report.q_what")}</legend>
         <div className="grid grid-cols-2 gap-2">
           {SEVERITIES.map((s) => (
             <button
@@ -74,19 +123,26 @@ export default function ReportForm() {
                   : "border-slate-200 hover:border-slate-300"
               }`}
             >
-              {SEVERITY_LABEL[s]}
+              {t(`severity.${s}`)}
             </button>
           ))}
         </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="font-semibold mb-1">Where are you?</legend>
-        {locating && <p className="text-sm text-ink/60">Getting your location…</p>}
+        <legend className="font-semibold mb-1">{t("report.q_where")}</legend>
+        {locating && <p className="text-sm text-ink/60">{t("report.locating")}</p>}
         {!locating && coords && !locationError && (
-          <p className="text-sm text-ink/70">
-            Using your current location ({coords.lat.toFixed(4)}, {coords.lng.toFixed(4)})
-          </p>
+          <div className="text-sm">
+            {formatLocation(label) ? (
+              <p className="text-ink font-medium">{formatLocation(label)}</p>
+            ) : (
+              <p className="text-ink/60">{t("report.detecting_suburb")}</p>
+            )}
+            <p className="text-ink/50 text-xs mt-0.5">
+              {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+            </p>
+          </div>
         )}
         {!locating && locationError && (
           <p className="text-sm text-alert-500">
@@ -96,13 +152,13 @@ export default function ReportForm() {
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="font-semibold mb-1">Anything else? (optional)</legend>
+        <legend className="font-semibold mb-1">{t("report.q_note")}</legend>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           maxLength={280}
           rows={3}
-          placeholder="e.g. Out since Monday morning, whole street."
+          placeholder={t("report.note_placeholder")}
           className="border-2 border-slate-200 rounded-lg p-3 text-sm focus:border-amanzi-500 outline-none"
         />
         <p className="text-xs text-ink/50 text-right">{note.length}/280</p>
@@ -117,11 +173,9 @@ export default function ReportForm() {
         disabled={submitting || !coords}
         className="bg-alert-500 hover:bg-alert-600 disabled:opacity-50 text-white font-semibold rounded-lg py-4"
       >
-        {submitting ? "Submitting…" : "Submit report"}
+        {submitting ? t("report.submitting") : t("report.submit")}
       </button>
-      <p className="text-xs text-ink/50 text-center">
-        Anonymous &middot; No account needed &middot; Free
-      </p>
+      <p className="text-xs text-ink/50 text-center">{t("report.anonymous")}</p>
     </form>
   );
 }

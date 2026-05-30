@@ -37,7 +37,7 @@ The narrative-rich version of the metrics. Each entry: date, what happened, what
 > Example (don't use, write your own):
 > **2026-06-12** — First real report from someone I don't know. A woman in Joza, Makhanda, marked "no water" at 6:47am. I refreshed the map and there was a red dot I hadn't placed. Realised I'd built something other people use.
 
-**2026-05-30** — Day 1. Shipped a working MVP end-to-end: opened the map in a browser, tapped "Report an outage," allowed location, picked "No water at all," submitted. The dot appeared on the map a second later. Postgres confirmed the row. *(Edit this in your own voice — what did it feel like? What did you not expect? Did anything almost not work?)*
+**2026-05-30** — Day 1. Shipped a working MVP end-to-end: opened the map in a browser, tapped "Report an outage," allowed location, picked "No water at all," submitted. The dot appeared on the map a second later. Postgres confirmed the row. Then pushed to GitHub, deployed to Vercel, and **the app went live at https://amanz-alert.vercel.app**. From "no code" to "a real URL on the internet that anyone in South Africa can use" in one session. *(Edit this in your own voice — what did it feel like? What did you not expect? Did anything almost not work?)*
 
 ---
 
@@ -56,6 +56,7 @@ Architectural choices that read well when you can explain *why*:
 - **PostGIS from day one.** Built the schema so "all reports within 5km of X in the last 6 hours" is one fast query, ready for municipality dashboards later.
 - **Realtime channel.** A new report shows up on every open map within ~1 second. Network-effect baked in.
 - **isiXhosa name + Eastern Cape pilot.** Started where the problem hurts most, with language that signals "this is for you" to the people most affected.
+- **UTC storage, local-time display.** Every report is stored in Coordinated Universal Time in the database and rendered in the viewer's local timezone in the browser. The map works identically for someone reporting from Mthatha and a researcher reading the data from London — there's no hardcoded "South Africa time" in the schema, so it scales internationally without rework.
 
 ---
 

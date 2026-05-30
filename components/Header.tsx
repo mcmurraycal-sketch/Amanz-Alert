@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
+import LanguageToggle from "./LanguageToggle";
 
 export default function Header() {
+  const { t } = useT();
   return (
     <header className="bg-ink text-white sticky top-0 z-20">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -10,10 +15,13 @@ export default function Header() {
           </span>
           Amanz&apos; Alert
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/" className="hover:text-amanzi-300">Map</Link>
-          <Link href="/report" className="hover:text-amanzi-300">Report</Link>
-          <Link href="/about" className="hover:text-amanzi-300 hidden sm:inline">About</Link>
+        <nav className="flex items-center gap-3 text-sm">
+          <Link href="/" className="hover:text-amanzi-300">{t("nav.map")}</Link>
+          <Link href="/report" className="hover:text-amanzi-300">{t("nav.report")}</Link>
+          <Link href="/about" className="hover:text-amanzi-300 hidden sm:inline">
+            {t("nav.about")}
+          </Link>
+          <LanguageToggle />
         </nav>
       </div>
     </header>
