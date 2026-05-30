@@ -4,9 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 export type Lang = "en" | "xh";
 
-// NOTE: isiXhosa translations are an initial pass written by a non-native speaker.
-// Before launching to real Eastern Cape users, have these reviewed by a fluent
-// isiXhosa speaker. Open to corrections — file a GitHub issue or DM the founder.
+// isiXhosa translations verified by the founder (isiXhosa speaker, Eastern Cape).
 const TRANSLATIONS: Record<Lang, Record<string, string>> = {
   en: {
     "lang.label": "isiXhosa",

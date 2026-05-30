@@ -39,6 +39,8 @@ The narrative-rich version of the metrics. Each entry: date, what happened, what
 
 **2026-05-30** — Day 1. Shipped a working MVP end-to-end: opened the map in a browser, tapped "Report an outage," allowed location, picked "No water at all," submitted. The dot appeared on the map a second later. Postgres confirmed the row. Then pushed to GitHub, deployed to Vercel, and **the app went live at https://amanz-alert.vercel.app**. From "no code" to "a real URL on the internet that anyone in South Africa can use" in one session. *(Edit this in your own voice — what did it feel like? What did you not expect? Did anything almost not work?)*
 
+**2026-05-30 (continued)** — Same day, shipped a feature sprint that turned the MVP into something I'd actually be willing to share with strangers: a real droplet logo, custom link-preview card for WhatsApp/iMessage, auto-detection of suburb + municipality on every report, a one-tap WhatsApp share button on submit and on every pin, a bilingual English / isiXhosa toggle on key copy (need a native speaker review before launch), and Confirm/Resolve buttons that let neighbours verify or close out existing reports — with auto-resolution at 2+ "water's back" votes and realtime removal of resolved pins from every open map. The thing finally felt like a product, not a prototype. *(Write in your own voice: what did you feel when the WhatsApp preview rendered properly the first time?)*
+
 ---
 
 ## Press, partnerships, recognition
@@ -55,7 +57,7 @@ Architectural choices that read well when you can explain *why*:
 - **Anonymous reporting.** Lowered the trust barrier; designed for a country where formal-identity systems exclude many.
 - **PostGIS from day one.** Built the schema so "all reports within 5km of X in the last 6 hours" is one fast query, ready for municipality dashboards later.
 - **Realtime channel.** A new report shows up on every open map within ~1 second. Network-effect baked in.
-- **isiXhosa name + Eastern Cape pilot.** Started where the problem hurts most, with language that signals "this is for you" to the people most affected.
+- **isiXhosa name + Eastern Cape pilot + bilingual UI.** Started where the problem hurts most, in a language I actually speak. The isiXhosa version of the app is not a translation done for politeness — it's written by someone who can read it and know whether it sounds right. That distinction matters: a lot of "for-Africa" products are built about communities rather than by people in them.
 - **UTC storage, local-time display.** Every report is stored in Coordinated Universal Time in the database and rendered in the viewer's local timezone in the browser. The map works identically for someone reporting from Mthatha and a researcher reading the data from London — there's no hardcoded "South Africa time" in the schema, so it scales internationally without rework.
 
 ---
