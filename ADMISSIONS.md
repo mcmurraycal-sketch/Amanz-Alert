@@ -1,0 +1,111 @@
+# Amanz' Alert — Admissions Evidence Tracker
+
+Private document. Not deployed. Updated continuously through the build → launch → growth phases.
+
+Purpose: capture the raw material that will fuel Common App essays, supplementals, activity descriptions, and interview talking points for the 2027 cycle (Harvard, Yale, Penn/Wharton, Princeton, Dartmouth, Brown).
+
+---
+
+## The story arc (working draft)
+
+**Hook:** *In Makhanda, the taps stopped working again last Tuesday — and no one knew when they'd come back. So I built a map.*
+
+**Problem:** South Africa has chronic water-supply failures. There is no single, public, real-time data source for outages. Municipalities don't publish reliable schedules. Communities rely on rumour and WhatsApp.
+
+**Action:** Built and shipped Amanz' Alert — a crowd-sourced PWA — solo, while in Grade 12. Pilot in Eastern Cape, architected to scale nationally.
+
+**Result:** *(fill in as you go — users, reports submitted, geographic coverage, press, partnerships, policy impact)*
+
+**Why it matters for me:** *(authentic version of: what this taught me about systems, civic agency, building under constraint, the South African context. Avoid generic-founder voice.)*
+
+---
+
+## Metrics log
+
+Update weekly once launched.
+
+| Date       | Users (unique fingerprints) | Reports submitted | Active reports | Municipalities covered | Notes |
+|------------|------------------------------|-------------------|----------------|------------------------|-------|
+| 2026-05-30 | 0                            | 0                 | 0              | 0                      | Build kickoff. |
+|            |                              |                   |                |                        |       |
+
+---
+
+## Milestone journal
+
+The narrative-rich version of the metrics. Each entry: date, what happened, what it felt like, what I learned. This is where good essay sentences are born.
+
+> Example (don't use, write your own):
+> **2026-06-12** — First real report from someone I don't know. A woman in Joza, Makhanda, marked "no water" at 6:47am. I refreshed the map and there was a red dot I hadn't placed. Realised I'd built something other people use.
+
+---
+
+## Press, partnerships, recognition
+
+- *(none yet — log Grocott's Mail, Daily Maverick, eNCA mentions; Rhodes Univ partnerships; ward councillor engagement; etc.)*
+
+---
+
+## Technical decisions worth citing in essays
+
+Architectural choices that read well when you can explain *why*:
+
+- **PWA over native app.** Met users where they were (Android, WhatsApp-first, data-sensitive) instead of forcing app-store downloads.
+- **Anonymous reporting.** Lowered the trust barrier; designed for a country where formal-identity systems exclude many.
+- **PostGIS from day one.** Built the schema so "all reports within 5km of X in the last 6 hours" is one fast query, ready for municipality dashboards later.
+- **Realtime channel.** A new report shows up on every open map within ~1 second. Network-effect baked in.
+- **isiXhosa name + Eastern Cape pilot.** Started where the problem hurts most, with language that signals "this is for you" to the people most affected.
+
+---
+
+## Application surfaces (where this project goes)
+
+### Common App — Activities list (10 slots)
+- **Position:** *Founder, Amanz' Alert*
+- **Organisation:** *Amanz' Alert (self-founded)*
+- **Description (150 chars):** draft once metrics exist. Examples to iterate on:
+  > "Built and shipped a crowd-sourced PWA mapping SA water outages. [N] users in [M] municipalities. Pilot: Eastern Cape; scaling nationally."
+
+### Common App — Additional Information section (~650 words)
+The right home for the technical depth + impact story. Use the metrics log as evidence.
+
+### Personal statement (Common App)
+*Probably* not the primary subject of the personal statement — that should be more personal. But the project can appear as the lens through which a deeper trait (systems thinking, civic urgency, building when no one asked you to) shows up.
+
+### School-specific supplementals
+- **Harvard:** "Additional info" expansion of the build story.
+- **Yale:** 200-word activity description — punchy version of the founder line.
+- **Penn / Wharton:** Why Wharton — connect to social impact / systems / scaling. Don't pitch it as a "startup" — pitch it as infrastructure-as-public-good.
+- **Princeton:** Civic engagement essay — strong fit.
+- **Dartmouth:** "Why do you care about X?" supplement — water access, SA context.
+- **Brown:** Open Curriculum essay — frame as wanting to combine CS + public policy + African development studies.
+
+### Interviews
+Anchor stories to have ready:
+- The moment I shipped the first version.
+- The first stranger to use it.
+- A technical decision I made that I'd defend.
+- A user-research moment that changed the product.
+- A failure or near-miss I had to recover from.
+
+---
+
+## What NOT to do
+
+- Don't overclaim impact. If 50 people use it, say 50.
+- Don't write "AI-powered" anywhere. The whole stack is well-understood pieces composed well — that's the story.
+- Don't lead with the tech. Lead with the problem and the person you helped.
+- Don't pretend to have done it alone if you bring on collaborators later — credit them, it makes the story stronger.
+- Don't let this dominate your application to the exclusion of who you are outside it.
+
+---
+
+## Next admissions-relevant moves
+
+- [ ] Ship to a public URL (Vercel).
+- [ ] Get 10 real users from outside St Andrew's.
+- [ ] Get a Grocott's Mail mention (Grahamstown local paper — easy first press hit).
+- [ ] Talk to a Rhodes University researcher in hydrology / public policy → quote.
+- [ ] Pitch to a Makhanda ward councillor → partnership angle.
+- [ ] Document one user story in detail (with permission) → essay-grade narrative.
+- [ ] Publish the dataset (CSV export) → "open data" angle for Wharton / Brown supplementals.
