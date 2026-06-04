@@ -14,13 +14,17 @@ exception when duplicate_object then null; end $$;
 
 alter table reports add column if not exists cause outage_cause;
 
--- Rebuild views so they include `cause`.
-create or replace view reports_public as
+-- Postgres won't let CREATE OR REPLACE VIEW insert a column in the middle of
+-- an existing view's column list, so drop + recreate. Views hold no data.
+drop view if exists reports_with_counts;
+drop view if exists reports_public;
+
+create view reports_public as
   select id, created_at, lat, lng, severity, cause, note, photo_url,
          municipality, suburb, resolved_at
   from reports;
 
-create or replace view reports_with_counts as
+create view reports_with_counts as
   select
     r.*,
     coalesce((select count(*) from report_confirmations c
