@@ -14,12 +14,39 @@ export const SEVERITY_COLOR: Record<Severity, string> = {
   intermittent: "#2E8FB6",
 };
 
+export type Cause =
+  | "burst_pipe"
+  | "planned_maintenance"
+  | "pump_failure"
+  | "theft_vandalism"
+  | "drought"
+  | "unknown";
+
+export const CAUSES: Cause[] = [
+  "burst_pipe",
+  "planned_maintenance",
+  "pump_failure",
+  "theft_vandalism",
+  "drought",
+  "unknown",
+];
+
+export const CAUSE_LABEL: Record<Cause, string> = {
+  burst_pipe: "Burst pipe",
+  planned_maintenance: "Planned maintenance",
+  pump_failure: "Pump / power failure",
+  theft_vandalism: "Theft or vandalism",
+  drought: "Drought / low supply",
+  unknown: "I don't know",
+};
+
 export type Report = {
   id: string;
   created_at: string;
   lat: number;
   lng: number;
   severity: Severity;
+  cause: Cause | null;
   note: string | null;
   photo_url: string | null;
   municipality: string | null;
@@ -31,6 +58,7 @@ export type ReportInsert = {
   lat: number;
   lng: number;
   severity: Severity;
+  cause?: Cause | null;
   note?: string | null;
   photo_url?: string | null;
   municipality?: string | null;

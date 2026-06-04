@@ -1,27 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { Coords, getCurrentLocation, getOrCreateFingerprint, MAKHANDA } from "@/lib/geo";
 import { reverseGeocode, formatLocation, type GeoLabel } from "@/lib/geocode";
 import { buildWhatsAppShare } from "@/lib/share";
 import { useT } from "@/lib/i18n";
-import { Severity } from "@/lib/types";
+import { Severity, Cause, CAUSES } from "@/lib/types";
+import LocationPicker from "./LocationPicker";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
+
+type LocMode = "auto" | "manual";
 
 export default function ReportForm() {
   const { t } = useT();
   const [coords, setCoords] = useState<Coords | null>(null);
+  const [pickedCoords, setPickedCoords] = useState<Coords | null>(null);
+  const [locMode, setLocMode] = useState<LocMode>("auto");
   const [submitted, setSubmitted] = useState(false);
   const [locating, setLocating] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [label, setLabel] = useState<GeoLabel | null>(null);
   const [severity, setSeverity] = useState<Severity>("no_water");
+  const [cause, setCause] = useState<Cause | null>(null);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const activeCoords = useMemo(
+    () => (locMode === "manual" && pickedCoords ? pickedCoords : coords),
+    [locMode, pickedCoords, coords]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -42,27 +53,34 @@ export default function ReportForm() {
   }, []);
 
   useEffect(() => {
-    if (!coords) return;
+    if (!activeCoords) return;
     let cancelled = false;
-    reverseGeocode(coords.lat, coords.lng).then((l) => {
+    setLabel(null);
+    reverseGeocode(activeCoords.lat, activeCoords.lng).then((l) => {
       if (!cancelled) setLabel(l);
     });
     return () => {
       cancelled = true;
     };
-  }, [coords]);
+  }, [activeCoords]);
+
+  const switchToManual = () => {
+    if (!pickedCoords) setPickedCoords(coords ?? MAKHANDA);
+    setLocMode("manual");
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coords) return;
+    if (!activeCoords) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
       const supabase = getBrowserSupabase();
       const { error } = await supabase.from("reports").insert({
-        lat: coords.lat,
-        lng: coords.lng,
+        lat: activeCoords.lat,
+        lng: activeCoords.lng,
         severity,
+        cause: cause ?? null,
         note: note.trim() || null,
         suburb: label?.suburb || null,
         municipality: label?.municipality || null,
@@ -97,10 +115,7 @@ export default function ReportForm() {
         >
           <span aria-hidden>📲</span> {t("report.share_whatsapp")}
         </a>
-        <Link
-          href="/"
-          className="text-amanzi-600 underline text-sm"
-        >
+        <Link href="/" className="text-amanzi-600 underline text-sm">
           {t("report.back_to_map")}
         </Link>
       </div>
@@ -131,8 +146,41 @@ export default function ReportForm() {
 
       <fieldset className="flex flex-col gap-2">
         <legend className="font-semibold mb-1">{t("report.q_where")}</legend>
+
+        <div className="grid grid-cols-2 gap-2 mb-1">
+          <button
+            type="button"
+            onClick={() => setLocMode("auto")}
+            className={`p-2 rounded-lg border-2 text-sm font-medium transition ${
+              locMode === "auto"
+                ? "border-amanzi-500 bg-amanzi-50 text-ink"
+                : "border-slate-200 hover:border-slate-300 text-ink/70"
+            }`}
+          >
+            📍 {t("report.loc_my")}
+          </button>
+          <button
+            type="button"
+            onClick={switchToManual}
+            className={`p-2 rounded-lg border-2 text-sm font-medium transition ${
+              locMode === "manual"
+                ? "border-amanzi-500 bg-amanzi-50 text-ink"
+                : "border-slate-200 hover:border-slate-300 text-ink/70"
+            }`}
+          >
+            🗺️ {t("report.loc_pick")}
+          </button>
+        </div>
+
+        {locMode === "manual" && activeCoords && (
+          <>
+            <LocationPicker initial={activeCoords} onChange={setPickedCoords} />
+            <p className="text-xs text-ink/60">{t("report.loc_pick_hint")}</p>
+          </>
+        )}
+
         {locating && <p className="text-sm text-ink/60">{t("report.locating")}</p>}
-        {!locating && coords && !locationError && (
+        {!locating && activeCoords && (
           <div className="text-sm">
             {formatLocation(label) ? (
               <p className="text-ink font-medium">{formatLocation(label)}</p>
@@ -140,15 +188,35 @@ export default function ReportForm() {
               <p className="text-ink/60">{t("report.detecting_suburb")}</p>
             )}
             <p className="text-ink/50 text-xs mt-0.5">
-              {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+              {activeCoords.lat.toFixed(4)}, {activeCoords.lng.toFixed(4)}
             </p>
           </div>
         )}
-        {!locating && locationError && (
+        {!locating && locationError && locMode === "auto" && (
           <p className="text-sm text-alert-500">
-            Couldn&apos;t get your location ({locationError}). Defaulting to Makhanda — please confirm before submitting.
+            Couldn&apos;t get your location ({locationError}). Switch to &ldquo;{t("report.loc_pick")}&rdquo; to set it manually.
           </p>
         )}
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="font-semibold mb-1">{t("report.q_cause")}</legend>
+        <div className="grid grid-cols-2 gap-2">
+          {CAUSES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCause(cause === c ? null : c)}
+              className={`text-left p-3 rounded-lg border-2 text-sm transition ${
+                cause === c
+                  ? "border-amanzi-500 bg-amanzi-50"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              {t(`cause.${c}`)}
+            </button>
+          ))}
+        </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
@@ -170,7 +238,7 @@ export default function ReportForm() {
 
       <button
         type="submit"
-        disabled={submitting || !coords}
+        disabled={submitting || !activeCoords}
         className="bg-alert-500 hover:bg-alert-600 disabled:opacity-50 text-white font-semibold rounded-lg py-4"
       >
         {submitting ? t("report.submitting") : t("report.submit")}

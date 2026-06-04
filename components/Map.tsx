@@ -5,7 +5,7 @@ import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { EASTERN_CAPE_CENTER, getOrCreateFingerprint } from "@/lib/geo";
 import { buildWhatsAppShare } from "@/lib/share";
-import { Report, SEVERITY_COLOR, SEVERITY_LABEL } from "@/lib/types";
+import { Report, SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL } from "@/lib/types";
 
 const MAP_STYLE = (key: string) =>
   `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`;
@@ -196,12 +196,20 @@ function buildPopupContent(r: Report, supabase: SupabaseClient): HTMLElement {
     severity: r.severity,
   });
 
+  const causeLine =
+    r.cause && r.cause !== "unknown"
+      ? `<div style="margin-top:6px;font-size:12px;color:#475569"><strong>Cause:</strong> ${escapeHTML(
+          CAUSE_LABEL[r.cause]
+        )}</div>`
+      : "";
+
   root.innerHTML = `
     <strong>${SEVERITY_LABEL[r.severity]}</strong><br/>
     <span style="color:#475569;font-size:12px">${
       r.suburb ? escapeHTML(r.suburb) + ", " : ""
     }${r.municipality ? escapeHTML(r.municipality) : ""}</span><br/>
     <span style="color:#94a3b8;font-size:11px">${new Date(r.created_at).toLocaleString()}</span>
+    ${causeLine}
     ${r.note ? `<p style="margin-top:6px;font-size:13px">${escapeHTML(r.note)}</p>` : ""}
   `;
 
