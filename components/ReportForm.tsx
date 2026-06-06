@@ -8,7 +8,7 @@ import { reverseGeocode, formatLocation, type GeoLabel } from "@/lib/geocode";
 import { buildWhatsAppShare } from "@/lib/share";
 import { useT } from "@/lib/i18n";
 import { Severity, Cause, CAUSES } from "@/lib/types";
-import AddressSearch from "./AddressSearch";
+import LocationSearch from "./LocationSearch";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
 
@@ -169,10 +169,11 @@ export default function ReportForm() {
         </div>
 
         {locMode === "search" && (
-          <AddressSearch
-            onSelect={(c, lbl) => {
-              setSearchCoords(c);
-              setLabel(lbl);
+          <LocationSearch
+            placeholder={t("report.search_placeholder")}
+            onSelect={(hit) => {
+              setSearchCoords(hit.coords);
+              setLabel(hit.label);
             }}
           />
         )}

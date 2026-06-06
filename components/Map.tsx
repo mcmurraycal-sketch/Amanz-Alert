@@ -6,6 +6,8 @@ import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { EASTERN_CAPE_CENTER, getOrCreateFingerprint } from "@/lib/geo";
 import { buildWhatsAppShare } from "@/lib/share";
 import { Report, SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL } from "@/lib/types";
+import { useT } from "@/lib/i18n";
+import LocationSearch from "./LocationSearch";
 
 const MAP_STYLE = (key: string) =>
   `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`;
@@ -24,9 +26,11 @@ const FALLBACK_STYLE: maplibregl.StyleSpecification = {
 };
 
 export default function OutageMap() {
+  const { t } = useT();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
+  const searchMarkerRef = useRef<Marker | null>(null);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -170,8 +174,33 @@ export default function OutageMap() {
         className="w-full bg-slate-200"
         style={{ height: "calc(100dvh - 3.5rem)" }}
       />
-      <div className="absolute top-3 left-3 bg-white/95 backdrop-blur rounded-lg px-3 py-2 shadow text-xs font-medium z-10">
-        <span className="text-alert-500">●</span> {count} active report{count === 1 ? "" : "s"}
+      <div className="absolute top-3 left-3 right-3 sm:right-auto sm:w-80 z-10 flex flex-col gap-2">
+        <LocationSearch
+          placeholder={t("search.placeholder_map")}
+          variant="floating"
+          onSelect={(hit) => {
+            const map = mapRef.current;
+            if (!map) return;
+            searchMarkerRef.current?.remove();
+            searchMarkerRef.current = new maplibregl.Marker({ color: "#1F7396" })
+              .setLngLat([hit.coords.lng, hit.coords.lat])
+              .setPopup(
+                new maplibregl.Popup({ offset: 14, closeButton: false }).setText(
+                  hit.displayName
+                )
+              )
+              .addTo(map);
+            map.flyTo({
+              center: [hit.coords.lng, hit.coords.lat],
+              zoom: 15,
+              duration: 1500,
+            });
+          }}
+        />
+        <div className="bg-white/95 backdrop-blur rounded-lg px-3 py-2 shadow text-xs font-medium w-fit">
+          <span className="text-alert-500">●</span> {count} active report
+          {count === 1 ? "" : "s"}
+        </div>
       </div>
     </div>
   );

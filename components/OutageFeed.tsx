@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { useT } from "@/lib/i18n";
 import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, type Report } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
+import { haversineKm, type Coords } from "@/lib/geo";
+import LocationSearch from "./LocationSearch";
+
+const FILTER_RADIUS_KM = 5;
 
 type ReportWithCounts = Report & {
   still_out_count: number;
@@ -27,6 +31,15 @@ export default function OutageFeed() {
   const { t } = useT();
   const [reports, setReports] = useState<ReportWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<{ coords: Coords; label: string } | null>(null);
+
+  const visibleReports = useMemo(() => {
+    if (!filter) return reports;
+    return reports.filter(
+      (r) =>
+        haversineKm({ lat: r.lat, lng: r.lng }, filter.coords) <= FILTER_RADIUS_KM
+    );
+  }, [reports, filter]);
 
   useEffect(() => {
     const supabase = getBrowserSupabase();
@@ -80,31 +93,67 @@ export default function OutageFeed() {
     };
   }, []);
 
+  const searchBar = (
+    <div className="px-4 pb-3">
+      <LocationSearch
+        placeholder={t("search.placeholder_feed")}
+        onSelect={(hit) =>
+          setFilter({ coords: hit.coords, label: hit.displayName })
+        }
+      />
+      {filter && (
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <span className="text-ink/60 truncate">
+            <span className="font-medium text-ink">{t("feed.near_prefix")}</span>{" "}
+            {filter.label}
+          </span>
+          <button
+            type="button"
+            onClick={() => setFilter(null)}
+            className="text-amanzi-600 underline whitespace-nowrap"
+          >
+            {t("feed.clear_filter")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-6 h-6 border-2 border-slate-300 border-t-amanzi-500 rounded-full animate-spin" />
-      </div>
+      <>
+        {searchBar}
+        <div className="flex items-center justify-center py-20">
+          <div className="w-6 h-6 border-2 border-slate-300 border-t-amanzi-500 rounded-full animate-spin" />
+        </div>
+      </>
     );
   }
 
-  if (reports.length === 0) {
+  if (visibleReports.length === 0) {
+    const msg = filter ? t("feed.no_nearby") : t("feed.empty");
     return (
-      <div className="text-center py-20 px-4">
-        <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl mb-4">
-          ✓
+      <>
+        {searchBar}
+        <div className="text-center py-20 px-4">
+          <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl mb-4">
+            ✓
+          </div>
+          <p className="text-ink/60">{msg}</p>
         </div>
-        <p className="text-ink/60">{t("feed.empty")}</p>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="divide-y divide-slate-100">
-      {reports.map((r) => (
-        <FeedCard key={r.id} report={r} t={t} />
-      ))}
-    </div>
+    <>
+      {searchBar}
+      <div className="divide-y divide-slate-100">
+        {visibleReports.map((r) => (
+          <FeedCard key={r.id} report={r} t={t} />
+        ))}
+      </div>
+    </>
   );
 }
 
