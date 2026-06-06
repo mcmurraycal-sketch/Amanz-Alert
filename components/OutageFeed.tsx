@@ -7,7 +7,9 @@ import { useT } from "@/lib/i18n";
 import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, type Report } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
 import { haversineKm, type Coords } from "@/lib/geo";
+import { reverseGeocode, formatLocation } from "@/lib/geocode";
 import LocationSearch from "./LocationSearch";
+import LocationPicker from "./LocationPicker";
 
 const FILTER_RADIUS_KM = 5;
 
@@ -31,15 +33,35 @@ export default function OutageFeed() {
   const { t } = useT();
   const [reports, setReports] = useState<ReportWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<{ coords: Coords; label: string } | null>(null);
+  const [filterCenter, setFilterCenter] = useState<Coords | null>(null);
+  const [filterLabel, setFilterLabel] = useState<string | null>(null);
 
   const visibleReports = useMemo(() => {
-    if (!filter) return reports;
+    if (!filterCenter) return reports;
     return reports.filter(
       (r) =>
-        haversineKm({ lat: r.lat, lng: r.lng }, filter.coords) <= FILTER_RADIUS_KM
+        haversineKm({ lat: r.lat, lng: r.lng }, filterCenter) <= FILTER_RADIUS_KM
     );
-  }, [reports, filter]);
+  }, [reports, filterCenter]);
+
+  // Reverse-geocode the filter centre so the "Within 5km of …" label updates
+  // as the user drags the pin.
+  useEffect(() => {
+    if (!filterCenter) return;
+    let cancelled = false;
+    reverseGeocode(filterCenter.lat, filterCenter.lng).then((g) => {
+      const lbl = formatLocation(g);
+      if (!cancelled && lbl) setFilterLabel(lbl);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [filterCenter]);
+
+  const clearFilter = () => {
+    setFilterCenter(null);
+    setFilterLabel(null);
+  };
 
   useEffect(() => {
     const supabase = getBrowserSupabase();
@@ -94,27 +116,38 @@ export default function OutageFeed() {
   }, []);
 
   const searchBar = (
-    <div className="px-4 pb-3">
+    <div className="px-4 pb-3 flex flex-col gap-2">
+      <p className="text-xs text-ink/60">{t("feed.step1_hint")}</p>
       <LocationSearch
         placeholder={t("search.placeholder_feed")}
-        onSelect={(hit) =>
-          setFilter({ coords: hit.coords, label: hit.displayName })
-        }
+        onSelect={(hit) => {
+          setFilterCenter(hit.coords);
+          setFilterLabel(hit.displayName);
+        }}
       />
-      {filter && (
-        <div className="mt-2 flex items-center gap-2 text-xs">
-          <span className="text-ink/60 truncate">
-            <span className="font-medium text-ink">{t("feed.near_prefix")}</span>{" "}
-            {filter.label}
-          </span>
-          <button
-            type="button"
-            onClick={() => setFilter(null)}
-            className="text-amanzi-600 underline whitespace-nowrap"
-          >
-            {t("feed.clear_filter")}
-          </button>
-        </div>
+
+      {filterCenter && (
+        <>
+          <p className="text-xs text-ink/60 mt-1">{t("feed.step2_hint")}</p>
+          <LocationPicker
+            initial={filterCenter}
+            onChange={setFilterCenter}
+            height={220}
+          />
+          <div className="flex items-center gap-2 text-xs mt-1">
+            <span className="text-ink/60 truncate">
+              <span className="font-medium text-ink">{t("feed.near_prefix")}</span>{" "}
+              {filterLabel ?? "…"}
+            </span>
+            <button
+              type="button"
+              onClick={clearFilter}
+              className="text-amanzi-600 underline whitespace-nowrap ml-auto"
+            >
+              {t("feed.clear_filter")}
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
@@ -131,7 +164,7 @@ export default function OutageFeed() {
   }
 
   if (visibleReports.length === 0) {
-    const msg = filter ? t("feed.no_nearby") : t("feed.empty");
+    const msg = filterCenter ? t("feed.no_nearby") : t("feed.empty");
     return (
       <>
         {searchBar}

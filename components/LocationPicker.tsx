@@ -7,6 +7,7 @@ import type { Coords } from "@/lib/geo";
 type Props = {
   initial: Coords;
   onChange: (c: Coords) => void;
+  height?: number;
 };
 
 const MAP_STYLE = (k: string) =>
@@ -25,7 +26,7 @@ const FALLBACK_STYLE: maplibregl.StyleSpecification = {
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
-export default function LocationPicker({ initial, onChange }: Props) {
+export default function LocationPicker({ initial, onChange, height = 300 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
@@ -114,7 +115,7 @@ export default function LocationPicker({ initial, onChange }: Props) {
     <div
       ref={containerRef}
       className="w-full rounded-lg overflow-hidden border-2 border-slate-200 bg-slate-200"
-      style={{ height: 300 }}
+      style={{ height }}
     />
   );
 }

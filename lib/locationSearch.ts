@@ -96,15 +96,22 @@ async function searchMapTiler(
     `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json` +
     `?key=${encodeURIComponent(key)}` +
     `&country=za` +
-    `&types=address,poi,place,locality,neighbourhood` +
+    `&types=address,poi,place,locality,neighbourhood,street` +
     `&autocomplete=true` +
-    `&limit=8` +
+    `&limit=15` +
     `&language=en`;
 
   const res = await fetch(url, { signal });
   if (!res.ok) return [];
   const data = (await res.json()) as { features?: MTFeature[] };
-  return (data.features || []).map(parseMTFeature);
+  const hits = (data.features || []).map(parseMTFeature);
+
+  // Address-type results first, then everything else, both kept in order.
+  return hits.sort((a, b) => {
+    const aAddr = a.id.includes("address") || a.id.includes("street") ? 0 : 1;
+    const bAddr = b.id.includes("address") || b.id.includes("street") ? 0 : 1;
+    return aAddr - bAddr;
+  });
 }
 
 // ---- Nominatim fallback ----
@@ -170,7 +177,7 @@ async function searchNominatim(
     q: query,
     format: "json",
     addressdetails: "1",
-    limit: "5",
+    limit: "8",
     countrycodes: "za",
   });
   const res = await fetch(
@@ -182,7 +189,87 @@ async function searchNominatim(
   return data.map(parseNominatim);
 }
 
+// ---- Photon (Komoot) ----
+
+type PhotonProps = {
+  name?: string;
+  street?: string;
+  housenumber?: string;
+  city?: string;
+  district?: string;
+  county?: string;
+  state?: string;
+  country?: string;
+  osm_id?: number;
+  type?: string;
+};
+
+type PhotonFeature = {
+  geometry: { coordinates: [number, number] };
+  properties: PhotonProps;
+};
+
+function parsePhoton(f: PhotonFeature): LocationHit {
+  const p = f.properties;
+  const street = [p.housenumber, p.street].filter(Boolean).join(" ");
+  const place = p.district || p.city || "";
+  const region = p.state || null;
+
+  const primary = street || p.name || place || "Unknown";
+  const secondaryParts: string[] = [];
+  if (place && place !== primary) secondaryParts.push(place);
+  if (region && region !== place) secondaryParts.push(region);
+
+  const municipality = p.city || p.county || null;
+
+  return {
+    id: `ph-${p.osm_id ?? Math.random()}`,
+    primary,
+    secondary: secondaryParts.join(", "),
+    displayName: `${primary}${secondaryParts.length ? ", " + secondaryParts.join(", ") : ""}`,
+    coords: {
+      lat: f.geometry.coordinates[1],
+      lng: f.geometry.coordinates[0],
+    },
+    label: {
+      suburb: place || p.street || null,
+      municipality,
+    },
+  };
+}
+
+async function searchPhoton(
+  query: string,
+  signal?: AbortSignal
+): Promise<LocationHit[]> {
+  const url =
+    `https://photon.komoot.io/api/` +
+    `?q=${encodeURIComponent(query)}` +
+    `&limit=10` +
+    `&lang=en` +
+    // Bias to South Africa (rough centroid)
+    `&lat=-29&lon=24`;
+  const res = await fetch(url, { signal });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { features?: PhotonFeature[] };
+  return (data.features || [])
+    .filter((f) => f.properties.country === "South Africa")
+    .map(parsePhoton);
+}
+
 // ---- Public ----
+
+function dedupe(hits: LocationHit[]): LocationHit[] {
+  const seen = new Set<string>();
+  const out: LocationHit[] = [];
+  for (const h of hits) {
+    const key = `${h.primary.toLowerCase()}|${h.coords.lat.toFixed(3)}|${h.coords.lng.toFixed(3)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(h);
+  }
+  return out;
+}
 
 export async function searchLocation(
   query: string,
@@ -191,17 +278,35 @@ export async function searchLocation(
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
+  let combined: LocationHit[] = [];
+
   try {
     const mt = await searchMapTiler(trimmed, signal);
-    if (mt.length > 0) return mt;
+    combined = combined.concat(mt);
   } catch (err) {
     if ((err as Error).name === "AbortError") throw err;
   }
 
-  try {
-    return await searchNominatim(trimmed, signal);
-  } catch (err) {
-    if ((err as Error).name === "AbortError") throw err;
-    return [];
+  // If MapTiler returned little, supplement with Photon (different OSM index,
+  // often catches streets MapTiler misses).
+  if (combined.length < 6) {
+    try {
+      const ph = await searchPhoton(trimmed, signal);
+      combined = combined.concat(ph);
+    } catch (err) {
+      if ((err as Error).name === "AbortError") throw err;
+    }
   }
+
+  // Only if both came up empty, try Nominatim as last-ditch.
+  if (combined.length === 0) {
+    try {
+      const nom = await searchNominatim(trimmed, signal);
+      combined = combined.concat(nom);
+    } catch (err) {
+      if ((err as Error).name === "AbortError") throw err;
+    }
+  }
+
+  return dedupe(combined).slice(0, 12);
 }
