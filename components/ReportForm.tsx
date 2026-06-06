@@ -8,16 +8,16 @@ import { reverseGeocode, formatLocation, type GeoLabel } from "@/lib/geocode";
 import { buildWhatsAppShare } from "@/lib/share";
 import { useT } from "@/lib/i18n";
 import { Severity, Cause, CAUSES } from "@/lib/types";
-import LocationPicker from "./LocationPicker";
+import AddressSearch from "./AddressSearch";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
 
-type LocMode = "auto" | "manual";
+type LocMode = "auto" | "search";
 
 export default function ReportForm() {
   const { t } = useT();
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [pickedCoords, setPickedCoords] = useState<Coords | null>(null);
+  const [searchCoords, setSearchCoords] = useState<Coords | null>(null);
   const [locMode, setLocMode] = useState<LocMode>("auto");
   const [submitted, setSubmitted] = useState(false);
   const [locating, setLocating] = useState(true);
@@ -30,8 +30,8 @@ export default function ReportForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const activeCoords = useMemo(
-    () => (locMode === "manual" && pickedCoords ? pickedCoords : coords),
-    [locMode, pickedCoords, coords]
+    () => (locMode === "search" && searchCoords ? searchCoords : coords),
+    [locMode, searchCoords, coords]
   );
 
   useEffect(() => {
@@ -53,6 +53,7 @@ export default function ReportForm() {
   }, []);
 
   useEffect(() => {
+    if (locMode === "search") return;
     if (!activeCoords) return;
     let cancelled = false;
     setLabel(null);
@@ -62,12 +63,7 @@ export default function ReportForm() {
     return () => {
       cancelled = true;
     };
-  }, [activeCoords]);
-
-  const switchToManual = () => {
-    if (!pickedCoords) setPickedCoords(coords ?? MAKHANDA);
-    setLocMode("manual");
-  };
+  }, [activeCoords, locMode]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,26 +157,30 @@ export default function ReportForm() {
           </button>
           <button
             type="button"
-            onClick={switchToManual}
+            onClick={() => setLocMode("search")}
             className={`p-2 rounded-lg border-2 text-sm font-medium transition ${
-              locMode === "manual"
+              locMode === "search"
                 ? "border-amanzi-500 bg-amanzi-50 text-ink"
                 : "border-slate-200 hover:border-slate-300 text-ink/70"
             }`}
           >
-            🗺️ {t("report.loc_pick")}
+            🔍 {t("report.loc_search")}
           </button>
         </div>
 
-        {locMode === "manual" && activeCoords && (
-          <>
-            <LocationPicker initial={activeCoords} onChange={setPickedCoords} />
-            <p className="text-xs text-ink/60">{t("report.loc_pick_hint")}</p>
-          </>
+        {locMode === "search" && (
+          <AddressSearch
+            onSelect={(c, lbl) => {
+              setSearchCoords(c);
+              setLabel(lbl);
+            }}
+          />
         )}
 
-        {locating && <p className="text-sm text-ink/60">{t("report.locating")}</p>}
-        {!locating && activeCoords && (
+        {locMode === "auto" && locating && (
+          <p className="text-sm text-ink/60">{t("report.locating")}</p>
+        )}
+        {locMode === "auto" && !locating && activeCoords && (
           <div className="text-sm">
             {formatLocation(label) ? (
               <p className="text-ink font-medium">{formatLocation(label)}</p>
@@ -192,9 +192,9 @@ export default function ReportForm() {
             </p>
           </div>
         )}
-        {!locating && locationError && locMode === "auto" && (
+        {locMode === "auto" && !locating && locationError && (
           <p className="text-sm text-alert-500">
-            Couldn&apos;t get your location ({locationError}). Switch to &ldquo;{t("report.loc_pick")}&rdquo; to set it manually.
+            Couldn&apos;t get your location ({locationError}). Switch to &ldquo;{t("report.loc_search")}&rdquo; to search for your address.
           </p>
         )}
       </fieldset>
