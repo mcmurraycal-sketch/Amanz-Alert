@@ -9,6 +9,7 @@ import { buildWhatsAppShare } from "@/lib/share";
 import { useT } from "@/lib/i18n";
 import { Severity, Cause, CAUSES } from "@/lib/types";
 import LocationSearch from "./LocationSearch";
+import LocationPicker from "./LocationPicker";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
 
@@ -53,17 +54,15 @@ export default function ReportForm() {
   }, []);
 
   useEffect(() => {
-    if (locMode === "search") return;
     if (!activeCoords) return;
     let cancelled = false;
-    setLabel(null);
     reverseGeocode(activeCoords.lat, activeCoords.lng).then((l) => {
       if (!cancelled) setLabel(l);
     });
     return () => {
       cancelled = true;
     };
-  }, [activeCoords, locMode]);
+  }, [activeCoords]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,13 +168,27 @@ export default function ReportForm() {
         </div>
 
         {locMode === "search" && (
-          <LocationSearch
-            placeholder={t("report.search_placeholder")}
-            onSelect={(hit) => {
-              setSearchCoords(hit.coords);
-              setLabel(hit.label);
-            }}
-          />
+          <div className="flex flex-col gap-3 mt-1">
+            <div>
+              <p className="text-sm font-semibold text-ink">{t("report.step1")}</p>
+              <p className="text-xs text-ink/60 mb-2">{t("report.step1_hint")}</p>
+              <LocationSearch
+                placeholder={t("report.search_placeholder")}
+                onSelect={(hit) => {
+                  setSearchCoords(hit.coords);
+                  setLabel(hit.label);
+                }}
+              />
+            </div>
+
+            {searchCoords && (
+              <div>
+                <p className="text-sm font-semibold text-ink">{t("report.step2")}</p>
+                <p className="text-xs text-ink/60 mb-2">{t("report.step2_hint")}</p>
+                <LocationPicker initial={searchCoords} onChange={setSearchCoords} />
+              </div>
+            )}
+          </div>
         )}
 
         {locMode === "auto" && locating && (
@@ -195,7 +208,16 @@ export default function ReportForm() {
         )}
         {locMode === "auto" && !locating && locationError && (
           <p className="text-sm text-alert-500">
-            Couldn&apos;t get your location ({locationError}). Switch to &ldquo;{t("report.loc_search")}&rdquo; to search for your address.
+            Couldn&apos;t get your location ({locationError}). Switch to &ldquo;{t("report.loc_search")}&rdquo; to set it manually.
+          </p>
+        )}
+
+        {locMode === "search" && activeCoords && formatLocation(label) && (
+          <p className="text-xs text-ink/60 mt-2">
+            <span className="font-medium text-ink">{formatLocation(label)}</span>{" "}
+            <span className="text-ink/40">
+              ({activeCoords.lat.toFixed(4)}, {activeCoords.lng.toFixed(4)})
+            </span>
           </p>
         )}
       </fieldset>

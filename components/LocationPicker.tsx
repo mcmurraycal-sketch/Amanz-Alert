@@ -31,6 +31,26 @@ export default function LocationPicker({ initial, onChange }: Props) {
   const markerRef = useRef<Marker | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const lastInitialRef = useRef<Coords>(initial);
+
+  useEffect(() => {
+    if (
+      initial.lat === lastInitialRef.current.lat &&
+      initial.lng === lastInitialRef.current.lng
+    ) {
+      return;
+    }
+    lastInitialRef.current = { lat: initial.lat, lng: initial.lng };
+    const map = mapRef.current;
+    const marker = markerRef.current;
+    if (!map || !marker) return;
+    marker.setLngLat([initial.lng, initial.lat]);
+    map.flyTo({
+      center: [initial.lng, initial.lat],
+      zoom: 15,
+      duration: 1000,
+    });
+  }, [initial]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;

@@ -20,7 +20,6 @@ export default function LocationSearch({
   const [results, setResults] = useState<LocationHit[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,7 +69,6 @@ export default function LocationSearch({
   }, [query]);
 
   const handleSelect = (hit: LocationHit) => {
-    setSelected(hit.displayName);
     setQuery(hit.displayName);
     setOpen(false);
     onSelect(hit);
@@ -87,10 +85,7 @@ export default function LocationSearch({
         <input
           type="text"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setSelected(null);
-          }}
+          onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
           placeholder={placeholder || t("search.placeholder")}
           className={inputClass}
@@ -121,11 +116,6 @@ export default function LocationSearch({
         </ul>
       )}
 
-      {selected && variant === "default" && (
-        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-          <span>✓</span> {t("search.selected")}
-        </p>
-      )}
     </div>
   );
 }
