@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Header from "@/components/Header";
 import InstallPrompt from "@/components/InstallPrompt";
+import OfflineBanner from "@/components/OfflineBanner";
 import { LangProvider } from "@/lib/i18n";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh flex flex-col">
         <LangProvider>
           <Header />
+          <OfflineBanner />
           <main className="flex-1 flex flex-col">{children}</main>
           <InstallPrompt />
         </LangProvider>
