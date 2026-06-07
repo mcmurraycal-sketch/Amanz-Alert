@@ -6,6 +6,8 @@ import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { Coords, getCurrentLocation, getOrCreateFingerprint, MAKHANDA } from "@/lib/geo";
 import { reverseGeocode, formatLocation, type GeoLabel } from "@/lib/geocode";
 import { buildWhatsAppShare } from "@/lib/share";
+import { buildComplaintMailto } from "@/lib/complaint";
+import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
 import { useT } from "@/lib/i18n";
 import { Severity, Cause, CAUSES } from "@/lib/types";
 import LocationSearch from "./LocationSearch";
@@ -29,6 +31,12 @@ export default function ReportForm() {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submittedReportId, setSubmittedReportId] = useState<string | null>(null);
+  const [authorities, setAuthorities] = useState<Authority[]>([]);
+
+  useEffect(() => {
+    loadAuthorities(getBrowserSupabase()).then(setAuthorities);
+  }, []);
 
   const activeCoords = useMemo(
     () => (locMode === "search" && searchCoords ? searchCoords : coords),
@@ -71,17 +79,22 @@ export default function ReportForm() {
     setSubmitError(null);
     try {
       const supabase = getBrowserSupabase();
-      const { error } = await supabase.from("reports").insert({
-        lat: activeCoords.lat,
-        lng: activeCoords.lng,
-        severity,
-        cause: cause ?? null,
-        note: note.trim() || null,
-        suburb: label?.suburb || null,
-        municipality: label?.municipality || null,
-        reporter_fingerprint: getOrCreateFingerprint(),
-      });
+      const { data, error } = await supabase
+        .from("reports")
+        .insert({
+          lat: activeCoords.lat,
+          lng: activeCoords.lng,
+          severity,
+          cause: cause ?? null,
+          note: note.trim() || null,
+          suburb: label?.suburb || null,
+          municipality: label?.municipality || null,
+          reporter_fingerprint: getOrCreateFingerprint(),
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      setSubmittedReportId((data as { id: string } | null)?.id ?? null);
       setSubmitted(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong.");
@@ -95,22 +108,79 @@ export default function ReportForm() {
       municipality: label?.municipality,
       severity,
     });
+
+    const routing = routeComplaint(authorities, label?.municipality || null);
+    const complaintReport =
+      submittedReportId && activeCoords
+        ? {
+            id: submittedReportId,
+            lat: activeCoords.lat,
+            lng: activeCoords.lng,
+            severity,
+            cause: cause ?? null,
+            note: note.trim() || null,
+            suburb: label?.suburb || null,
+            municipality: label?.municipality || null,
+            created_at: new Date().toISOString(),
+          }
+        : null;
+    const complaintUrl = complaintReport
+      ? buildComplaintMailto(complaintReport, routing)
+      : null;
+
+    const onComplaintClick = () => {
+      if (!submittedReportId) return;
+      void getBrowserSupabase()
+        .from("complaints_filed")
+        .insert({
+          report_id: submittedReportId,
+          reporter_fingerprint: getOrCreateFingerprint(),
+        });
+    };
+
     return (
-      <div className="flex flex-col gap-5 text-center py-8">
+      <div className="flex flex-col gap-4 text-center py-8">
         <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl">
           ✓
         </div>
         <h2 className="text-2xl font-bold">{t("report.thanks_title")}</h2>
         <p className="text-ink/70">{t("report.thanks_body")}</p>
-        <a
-          href={shareUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-green-600 hover:bg-green-700 active:scale-95 transition text-white font-semibold rounded-lg py-4 px-6 flex items-center justify-center gap-2"
-        >
-          <span aria-hidden>📲</span> {t("report.share_whatsapp")}
-        </a>
-        <Link href="/" className="text-amanzi-600 underline text-sm">
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2">
+          <a
+            href={shareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
+          >
+            <span aria-hidden>📲</span> {t("report.share_whatsapp")}
+          </a>
+          {complaintUrl && (
+            <a
+              href={complaintUrl}
+              onClick={onComplaintClick}
+              className="flex-1 bg-ink hover:bg-ink/90 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
+            >
+              <span aria-hidden>📨</span> {t("complaint.send")}
+            </a>
+          )}
+        </div>
+
+        {routing.labels.length > 0 ? (
+          <p className="text-[11px] text-ink/50 leading-snug">
+            <span className="font-medium">{t("complaint.routes_to")}:</span>{" "}
+            {routing.labels.join(", ")}
+          </p>
+        ) : authorities.length > 0 && complaintUrl ? (
+          <p className="text-[11px] text-alert-500 leading-snug">
+            {t("complaint.no_recipient")}
+          </p>
+        ) : null}
+
+        <Link href="/mine" className="text-amanzi-600 underline text-sm mt-2">
+          {t("report.view_mine")}
+        </Link>
+        <Link href="/" className="text-ink/60 underline text-xs">
           {t("report.back_to_map")}
         </Link>
       </div>

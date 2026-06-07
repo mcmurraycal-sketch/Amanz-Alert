@@ -18,6 +18,7 @@ export default function Header() {
         <nav className="flex items-center gap-3 text-sm">
           <Link href="/" className="hover:text-amanzi-300">{t("nav.map")}</Link>
           <Link href="/feed" className="hover:text-amanzi-300">{t("nav.feed")}</Link>
+          <Link href="/mine" className="hover:text-amanzi-300">{t("nav.mine")}</Link>
           <Link href="/stats" className="hover:text-amanzi-300 hidden sm:inline">
             {t("nav.stats")}
           </Link>

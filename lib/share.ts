@@ -17,7 +17,11 @@ export function buildWhatsAppShare(opts: {
 }): string {
   const where = [opts.suburb, opts.municipality].filter(Boolean).join(", ");
   const place = where || "my area";
-  const what = opts.severity ? SEVERITY_LABEL[opts.severity].toLowerCase() : "water outage";
-  const text = `${what.charAt(0).toUpperCase() + what.slice(1)} in ${place} right now. See the live outage map for South Africa: ${getAppUrl()}`;
+  const sevText = opts.severity ? SEVERITY_LABEL[opts.severity] : "Water outage";
+  const emoji = opts.severity === "no_water" ? "🚨" : "💧";
+  const text =
+    `${emoji} ${sevText} in ${place} right now. ` +
+    `See it on the live map and log an official complaint — it pressures the municipality to fix it faster: ` +
+    getAppUrl();
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }
