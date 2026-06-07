@@ -1,5 +1,6 @@
 import type { Severity, Cause } from "./types";
 import { SEVERITY_LABEL, CAUSE_LABEL } from "./types";
+import type { ComplaintRouting } from "./authorities";
 
 const DEFAULT_APP_URL = "https://amanz-alert.vercel.app";
 
@@ -22,7 +23,10 @@ type ComplaintReport = {
   created_at: string;
 };
 
-export function buildComplaintMailto(r: ComplaintReport): string {
+export function buildComplaintMailto(
+  r: ComplaintReport,
+  routing?: ComplaintRouting
+): string {
   const where =
     [r.suburb, r.municipality].filter(Boolean).join(", ") ||
     `coordinates ${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`;
@@ -36,12 +40,19 @@ export function buildComplaintMailto(r: ComplaintReport): string {
 
   const subject = `Water outage complaint — ${where} (${reportedDate})`;
 
-  const body =
-`Recommended recipients (please confirm before sending):
-  • Your local municipality's customer-care address (find it at gov.za)
+  const routedHeader =
+    routing && (routing.to.length > 0 || routing.cc.length > 0)
+      ? `This complaint has been pre-addressed to:
+${routing.labels.map((l) => `  • ${l}`).join("\n")}
+
+Please confirm the recipient list in your email client before sending. If your local municipality is not on the list above, add their customer-care address yourself.`
+      : `We do not yet have a verified email address for the municipality this outage falls under. Please look up your local municipality's customer-care address on gov.za before sending. Recommended additional CCs:
   • Your provincial Department of Water and Sanitation office
   • Your ward councillor
-  • Local press if the outage has been unresolved for more than 48 hours
+  • Local press if the outage has been unresolved for more than 48 hours`;
+
+  const body =
+`${routedHeader}
 
 ------
 
@@ -68,5 +79,12 @@ A copy of this complaint is being kept in the public interest via Amanz' Alert (
 Yours sincerely,
 A concerned resident`;
 
-  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const to = routing ? routing.to.join(",") : "";
+  const ccParam =
+    routing && routing.cc.length > 0
+      ? `&cc=${encodeURIComponent(routing.cc.join(","))}`
+      : "";
+  return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(
+    subject
+  )}${ccParam}&body=${encodeURIComponent(body)}`;
 }

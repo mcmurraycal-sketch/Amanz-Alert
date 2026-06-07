@@ -6,6 +6,7 @@ import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { EASTERN_CAPE_CENTER, getOrCreateFingerprint } from "@/lib/geo";
 import { buildWhatsAppShare } from "@/lib/share";
 import { buildComplaintMailto } from "@/lib/complaint";
+import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
 import {
   ReportWithCounts,
   SEVERITY_COLOR,
@@ -38,6 +39,7 @@ export default function OutageMap() {
   const mapRef = useRef<MLMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
   const searchMarkerRef = useRef<Marker | null>(null);
+  const authoritiesRef = useRef<Authority[]>([]);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -118,7 +120,7 @@ export default function OutageMap() {
       el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
 
       const popup = new Popup({ offset: 14, closeButton: false }).setDOMContent(
-        buildPopupContent(r, supabase)
+        buildPopupContent(r, supabase, authoritiesRef.current)
       );
       const marker = new Marker({ element: el })
         .setLngLat([r.lng, r.lat])
@@ -129,6 +131,9 @@ export default function OutageMap() {
 
     let cancelled = false;
     (async () => {
+      // Authorities cached before any popups are built so routing labels render
+      // from the first interaction.
+      authoritiesRef.current = await loadAuthorities(supabase);
       const { data } = await supabase
         .from("reports_with_counts")
         .select("*")
@@ -221,7 +226,11 @@ function escapeHTML(s: string) {
 
 type SupabaseClient = ReturnType<typeof getBrowserSupabase>;
 
-function buildPopupContent(r: ReportWithCounts, supabase: SupabaseClient): HTMLElement {
+function buildPopupContent(
+  r: ReportWithCounts,
+  supabase: SupabaseClient,
+  authorities: Authority[]
+): HTMLElement {
   const root = document.createElement("div");
   root.style.minWidth = "200px";
   root.style.fontFamily = "inherit";
@@ -328,8 +337,10 @@ function buildPopupContent(r: ReportWithCounts, supabase: SupabaseClient): HTMLE
   share.textContent = "📲 Share on WhatsApp";
   root.appendChild(share);
 
+  const routing = routeComplaint(authorities, r.municipality);
+
   const complaint = document.createElement("a");
-  complaint.href = buildComplaintMailto(r);
+  complaint.href = buildComplaintMailto(r, routing);
   complaint.style.display = "block";
   complaint.style.marginTop = "6px";
   complaint.style.background = "#0B1F3A";
@@ -351,6 +362,27 @@ function buildPopupContent(r: ReportWithCounts, supabase: SupabaseClient): HTMLE
       .then(() => {});
   };
   root.appendChild(complaint);
+
+  if (routing.labels.length > 0) {
+    const routingLine = document.createElement("div");
+    routingLine.style.marginTop = "6px";
+    routingLine.style.fontSize = "10px";
+    routingLine.style.lineHeight = "1.4";
+    routingLine.style.color = "#64748b";
+    routingLine.innerHTML = `<strong>Routes to:</strong> ${routing.labels
+      .map(escapeHTML)
+      .join(", ")}`;
+    root.appendChild(routingLine);
+  } else if (authorities.length > 0) {
+    const noRouting = document.createElement("div");
+    noRouting.style.marginTop = "6px";
+    noRouting.style.fontSize = "10px";
+    noRouting.style.lineHeight = "1.4";
+    noRouting.style.color = "#B83820";
+    noRouting.textContent =
+      "No verified recipient yet — add one in your email app before sending.";
+    root.appendChild(noRouting);
+  }
 
   return root;
 }

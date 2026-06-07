@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n";
 import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, formatPrediction, type ReportWithCounts } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
 import { buildComplaintMailto } from "@/lib/complaint";
+import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
 import { getOrCreateFingerprint } from "@/lib/geo";
 import { haversineKm, type Coords } from "@/lib/geo";
 import { reverseGeocode, formatLocation } from "@/lib/geocode";
@@ -30,8 +31,13 @@ export default function OutageFeed() {
   const { t } = useT();
   const [reports, setReports] = useState<ReportWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authorities, setAuthorities] = useState<Authority[]>([]);
   const [filterCenter, setFilterCenter] = useState<Coords | null>(null);
   const [filterLabel, setFilterLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAuthorities(getBrowserSupabase()).then(setAuthorities);
+  }, []);
 
   const visibleReports = useMemo(() => {
     if (!filterCenter) return reports;
@@ -180,21 +186,30 @@ export default function OutageFeed() {
       {searchBar}
       <div className="divide-y divide-slate-100">
         {visibleReports.map((r) => (
-          <FeedCard key={r.id} report={r} t={t} />
+          <FeedCard key={r.id} report={r} t={t} authorities={authorities} />
         ))}
       </div>
     </>
   );
 }
 
-function FeedCard({ report: r, t }: { report: ReportWithCounts; t: (k: string) => string }) {
+function FeedCard({
+  report: r,
+  t,
+  authorities,
+}: {
+  report: ReportWithCounts;
+  t: (k: string) => string;
+  authorities: Authority[];
+}) {
   const location = [r.suburb, r.municipality].filter(Boolean).join(", ") || "Unknown location";
   const shareUrl = buildWhatsAppShare({
     suburb: r.suburb,
     municipality: r.municipality,
     severity: r.severity,
   });
-  const complaintUrl = buildComplaintMailto(r);
+  const routing = routeComplaint(authorities, r.municipality);
+  const complaintUrl = buildComplaintMailto(r, routing);
 
   const complaintLabel =
     r.complaint_count === 1
@@ -278,6 +293,16 @@ function FeedCard({ report: r, t }: { report: ReportWithCounts; t: (k: string) =
             📨 {t("complaint.send")}
           </a>
         </div>
+        {routing.labels.length > 0 ? (
+          <p className="text-[11px] text-ink/50 mt-1.5 leading-snug">
+            <span className="font-medium">{t("complaint.routes_to")}:</span>{" "}
+            {routing.labels.join(", ")}
+          </p>
+        ) : authorities.length > 0 ? (
+          <p className="text-[11px] text-alert-500 mt-1.5 leading-snug">
+            {t("complaint.no_recipient")}
+          </p>
+        ) : null}
       </div>
     </div>
   );
