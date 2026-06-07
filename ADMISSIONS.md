@@ -41,6 +41,15 @@ The narrative-rich version of the metrics. Each entry: date, what happened, what
 
 **2026-05-30 (continued)** — Same day, shipped a feature sprint that turned the MVP into something I'd actually be willing to share with strangers: a real droplet logo, custom link-preview card for WhatsApp/iMessage, auto-detection of suburb + municipality on every report, a one-tap WhatsApp share button on submit and on every pin, a bilingual English / isiXhosa toggle on key copy (need a native speaker review before launch), and Confirm/Resolve buttons that let neighbours verify or close out existing reports — with auto-resolution at 2+ "water's back" votes and realtime removal of resolved pins from every open map. The thing finally felt like a product, not a prototype. *(Write in your own voice: what did you feel when the WhatsApp preview rendered properly the first time?)*
 
+**2026-06-07** — Pivot from "tracker" to **civic infrastructure**. Started by asking the right question: *where does the value really lie for the user beyond seeing the outage?* The answer turned into four shipped systems in one session:
+
+  1. **One-tap formal complaint** with a typed `authorities` table routing each complaint to the right municipality + provincial DWS + the Public Protector, the email body citing the Water Services Act and Section 27 of the Constitution. The action is folded into the WhatsApp share text ("log an official complaint — it pressures the municipality to fix it faster") and surfaces next to the share button on the post-submit screen. Complaint counts aggregate publicly per report.
+  2. **Duration prediction** on every active outage: median resolution time computed via `percentile_cont` over historical resolved durations, falling back from suburb-level to municipality-level when sample size is too low. "Typical resolution: ~4h based on 6 prior outages in Joza."
+  3. **Public reliability scoreboard** at `/stats` ranking SA suburbs by outage frequency and total downtime over trailing 30- and 90-day windows. Ongoing outages count their current age. Designed to be journalist-quotable and pressure-generating.
+  4. **`/mine` page** — every reporter can see their own reports (matched by anonymous device fingerprint), with inline "Still out" and "Water's back" buttons — no need to hunt on the map.
+
+Same day, **shipped the SEO foundation** — robots.ts, sitemap.ts, metadataBase, JSON-LD WebSite + Organization schemas — and got the site verified in Google Search Console. Homepage entered Google's index within minutes of verification. *(Write your own line about what it felt like to see "URL is on Google" for the first time.)*
+
 ---
 
 ## Press, partnerships, recognition
@@ -59,6 +68,7 @@ Architectural choices that read well when you can explain *why*:
 - **Realtime channel.** A new report shows up on every open map within ~1 second. Network-effect baked in.
 - **isiXhosa name + Eastern Cape pilot + bilingual UI.** Started where the problem hurts most, in a language I actually speak. The isiXhosa version of the app is not a translation done for politeness — it's written by someone who can read it and know whether it sounds right. That distinction matters: a lot of "for-Africa" products are built about communities rather than by people in them.
 - **UTC storage, local-time display.** Every report is stored in Coordinated Universal Time in the database and rendered in the viewer's local timezone in the browser. The map works identically for someone reporting from Mthatha and a researcher reading the data from London — there's no hardcoded "South Africa time" in the schema, so it scales internationally without rework.
+- **Typed authority directory.** Rather than hardcoding municipality emails into the application code, the complaint-routing system reads from a typed `authorities` table — `municipality`, `district`, `province_dws`, `national`, `oversight` — with each row carrying name aliases, a verified-at date, and routing rules. Adding a new municipality is one INSERT, and every complaint surfaces a "Routes to: X, Y, Z" label so the resident knows where their email is going before they send it. Designed so that verifying SA's full set of municipal customer-care addresses is its own meaningful research project that grows the system's coverage without code changes.
 
 ---
 
