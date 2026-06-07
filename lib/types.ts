@@ -54,6 +54,29 @@ export type Report = {
   resolved_at: string | null;
 };
 
+export type ReportWithCounts = Report & {
+  still_out_count: number;
+  resolved_count: number;
+  complaint_count: number;
+  predicted_resolution_seconds: number | null;
+  prediction_sample_size: number;
+};
+
+export function formatPrediction(seconds: number | null): string | null {
+  if (!seconds || seconds <= 0) return null;
+  const hours = seconds / 3600;
+  if (hours < 1) {
+    const minutes = Math.round(seconds / 60);
+    return `~${minutes} min`;
+  }
+  if (hours < 12) {
+    return `~${Math.round(hours)}h`;
+  }
+  const days = hours / 24;
+  if (days < 2) return `~${Math.round(hours)}h`;
+  return `~${Math.round(days)} days`;
+}
+
 export type ReportInsert = {
   lat: number;
   lng: number;

@@ -5,7 +5,14 @@ import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { EASTERN_CAPE_CENTER, getOrCreateFingerprint } from "@/lib/geo";
 import { buildWhatsAppShare } from "@/lib/share";
-import { Report, SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL } from "@/lib/types";
+import { buildComplaintMailto } from "@/lib/complaint";
+import {
+  ReportWithCounts,
+  SEVERITY_COLOR,
+  SEVERITY_LABEL,
+  CAUSE_LABEL,
+  formatPrediction,
+} from "@/lib/types";
 import { useT } from "@/lib/i18n";
 import LocationSearch from "./LocationSearch";
 
@@ -100,7 +107,7 @@ export default function OutageMap() {
       }
     };
 
-    const addOrUpdate = (r: Report) => {
+    const addOrUpdate = (r: ReportWithCounts) => {
       if (markersRef.current.has(r.id)) return;
       const el = document.createElement("div");
       el.style.width = "18px";
@@ -123,14 +130,14 @@ export default function OutageMap() {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("reports_public")
+        .from("reports_with_counts")
         .select("*")
         .is("resolved_at", null)
         .order("created_at", { ascending: false })
         .limit(1000);
       if (cancelled || !data) return;
       setCount(data.length);
-      data.forEach((r) => addOrUpdate(r as Report));
+      data.forEach((r) => addOrUpdate(r as ReportWithCounts));
     })();
 
     const channel = supabase
@@ -141,12 +148,12 @@ export default function OutageMap() {
         async (payload) => {
           const id = (payload.new as { id: string }).id;
           const { data } = await supabase
-            .from("reports_public")
+            .from("reports_with_counts")
             .select("*")
             .eq("id", id)
             .maybeSingle();
           if (data) {
-            addOrUpdate(data as Report);
+            addOrUpdate(data as ReportWithCounts);
             setCount((c) => c + 1);
           }
         }
@@ -214,7 +221,7 @@ function escapeHTML(s: string) {
 
 type SupabaseClient = ReturnType<typeof getBrowserSupabase>;
 
-function buildPopupContent(r: Report, supabase: SupabaseClient): HTMLElement {
+function buildPopupContent(r: ReportWithCounts, supabase: SupabaseClient): HTMLElement {
   const root = document.createElement("div");
   root.style.minWidth = "200px";
   root.style.fontFamily = "inherit";
@@ -232,6 +239,27 @@ function buildPopupContent(r: Report, supabase: SupabaseClient): HTMLElement {
         )}</div>`
       : "";
 
+  const prediction = formatPrediction(r.predicted_resolution_seconds);
+  const predictionLine =
+    prediction && r.prediction_sample_size > 0
+      ? `<div style="margin-top:6px;font-size:12px;color:#155875"><strong>Typical resolution:</strong> ${prediction} <span style="color:#94a3b8">(${r.prediction_sample_size} prior)</span></div>`
+      : "";
+
+  const countsLine =
+    r.still_out_count > 0 || r.complaint_count > 0
+      ? `<div style="margin-top:6px;font-size:11px;color:#475569">${
+          r.still_out_count > 0
+            ? `<strong style="color:#B83820">${r.still_out_count}</strong> confirmed still out`
+            : ""
+        }${r.still_out_count > 0 && r.complaint_count > 0 ? " &middot; " : ""}${
+          r.complaint_count > 0
+            ? `<strong>${r.complaint_count}</strong> complaint${
+                r.complaint_count === 1 ? "" : "s"
+              } filed`
+            : ""
+        }</div>`
+      : "";
+
   root.innerHTML = `
     <strong>${SEVERITY_LABEL[r.severity]}</strong><br/>
     <span style="color:#475569;font-size:12px">${
@@ -239,6 +267,8 @@ function buildPopupContent(r: Report, supabase: SupabaseClient): HTMLElement {
     }${r.municipality ? escapeHTML(r.municipality) : ""}</span><br/>
     <span style="color:#94a3b8;font-size:11px">${new Date(r.created_at).toLocaleString()}</span>
     ${causeLine}
+    ${predictionLine}
+    ${countsLine}
     ${r.note ? `<p style="margin-top:6px;font-size:13px">${escapeHTML(r.note)}</p>` : ""}
   `;
 
@@ -297,6 +327,30 @@ function buildPopupContent(r: Report, supabase: SupabaseClient): HTMLElement {
   share.style.textAlign = "center";
   share.textContent = "📲 Share on WhatsApp";
   root.appendChild(share);
+
+  const complaint = document.createElement("a");
+  complaint.href = buildComplaintMailto(r);
+  complaint.style.display = "block";
+  complaint.style.marginTop = "6px";
+  complaint.style.background = "#0B1F3A";
+  complaint.style.color = "white";
+  complaint.style.padding = "6px 10px";
+  complaint.style.borderRadius = "6px";
+  complaint.style.fontSize = "12px";
+  complaint.style.textDecoration = "none";
+  complaint.style.fontWeight = "600";
+  complaint.style.textAlign = "center";
+  complaint.textContent = "📨 Send official complaint";
+  complaint.onclick = () => {
+    supabase
+      .from("complaints_filed")
+      .insert({
+        report_id: r.id,
+        reporter_fingerprint: getOrCreateFingerprint(),
+      })
+      .then(() => {});
+  };
+  root.appendChild(complaint);
 
   return root;
 }

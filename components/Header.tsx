@@ -18,8 +18,11 @@ export default function Header() {
         <nav className="flex items-center gap-3 text-sm">
           <Link href="/" className="hover:text-amanzi-300">{t("nav.map")}</Link>
           <Link href="/feed" className="hover:text-amanzi-300">{t("nav.feed")}</Link>
+          <Link href="/stats" className="hover:text-amanzi-300 hidden sm:inline">
+            {t("nav.stats")}
+          </Link>
           <Link href="/report" className="hover:text-amanzi-300">{t("nav.report")}</Link>
-          <Link href="/about" className="hover:text-amanzi-300 hidden sm:inline">
+          <Link href="/about" className="hover:text-amanzi-300 hidden md:inline">
             {t("nav.about")}
           </Link>
           <LanguageToggle />

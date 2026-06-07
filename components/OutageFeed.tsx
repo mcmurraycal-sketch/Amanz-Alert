@@ -4,19 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { useT } from "@/lib/i18n";
-import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, type Report } from "@/lib/types";
+import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, formatPrediction, type ReportWithCounts } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
+import { buildComplaintMailto } from "@/lib/complaint";
+import { getOrCreateFingerprint } from "@/lib/geo";
 import { haversineKm, type Coords } from "@/lib/geo";
 import { reverseGeocode, formatLocation } from "@/lib/geocode";
 import LocationSearch from "./LocationSearch";
 import LocationPicker from "./LocationPicker";
 
 const FILTER_RADIUS_KM = 5;
-
-type ReportWithCounts = Report & {
-  still_out_count: number;
-  resolved_count: number;
-};
 
 function timeAgo(dateStr: string, t: (k: string) => string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -197,6 +194,21 @@ function FeedCard({ report: r, t }: { report: ReportWithCounts; t: (k: string) =
     municipality: r.municipality,
     severity: r.severity,
   });
+  const complaintUrl = buildComplaintMailto(r);
+
+  const complaintLabel =
+    r.complaint_count === 1
+      ? t("complaint.count_one")
+      : t("complaint.count_many").replace("{n}", String(r.complaint_count));
+
+  const onComplaintClick = () => {
+    void getBrowserSupabase()
+      .from("complaints_filed")
+      .insert({
+        report_id: r.id,
+        reporter_fingerprint: getOrCreateFingerprint(),
+      });
+  };
 
   return (
     <div className="px-4 py-4 flex gap-3">
@@ -218,8 +230,19 @@ function FeedCard({ report: r, t }: { report: ReportWithCounts; t: (k: string) =
         </div>
 
         {r.cause && r.cause !== "unknown" && (
-          <p className="text-xs text-ink/60 mt-1">
-            {CAUSE_LABEL[r.cause]}
+          <p className="text-xs text-ink/60 mt-1">{CAUSE_LABEL[r.cause]}</p>
+        )}
+
+        {formatPrediction(r.predicted_resolution_seconds) && r.prediction_sample_size > 0 && (
+          <p className="text-xs text-amanzi-700 mt-1">
+            <span className="font-medium">{t("prediction.label")}:</span>{" "}
+            {formatPrediction(r.predicted_resolution_seconds)}{" "}
+            <span className="text-ink/50">
+              ·{" "}
+              {r.prediction_sample_size === 1
+                ? t("prediction.basis_one")
+                : t("prediction.basis_many").replace("{n}", String(r.prediction_sample_size))}
+            </span>
           </p>
         )}
 
@@ -227,25 +250,32 @@ function FeedCard({ report: r, t }: { report: ReportWithCounts; t: (k: string) =
           <p className="text-sm text-ink/80 mt-1.5 line-clamp-2">{r.note}</p>
         )}
 
-        <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2 text-xs">
           {r.still_out_count > 0 && (
-            <span className="text-xs text-alert-500 font-medium">
+            <span className="text-alert-500 font-medium">
               {r.still_out_count} {t("feed.confirmed_by")}
             </span>
           )}
-          <Link
-            href="/"
-            className="text-xs text-amanzi-600 font-medium hover:underline"
-          >
+          {r.complaint_count > 0 && (
+            <span className="text-ink/70 font-medium">{complaintLabel}</span>
+          )}
+          <Link href="/" className="text-amanzi-600 font-medium hover:underline">
             {t("nav.map")} →
           </Link>
           <a
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-green-600 font-medium hover:underline ml-auto"
+            className="text-green-600 font-medium hover:underline"
           >
             📲 WhatsApp
+          </a>
+          <a
+            href={complaintUrl}
+            onClick={onComplaintClick}
+            className="text-ink font-medium hover:underline ml-auto"
+          >
+            📨 {t("complaint.send")}
           </a>
         </div>
       </div>
