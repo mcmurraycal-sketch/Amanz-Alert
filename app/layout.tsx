@@ -72,9 +72,9 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  // When you set up Google Search Console verification via HTML tag, paste
-  // the content value here, e.g. google: 'ABC123XYZ'.
-  verification: {},
+  verification: {
+    google: "k3qPFTIWQP6qfbyAjGJrp2d02aOus5cJ94sO4J39m5k",
+  },
 };
 
 export const viewport: Viewport = {
