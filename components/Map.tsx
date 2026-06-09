@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
-import { EASTERN_CAPE_CENTER, getOrCreateFingerprint } from "@/lib/geo";
+import { EASTERN_CAPE_CENTER, getOrCreateFingerprint, haversineKm } from "@/lib/geo";
 import { buildWhatsAppShare } from "@/lib/share";
 import { buildComplaintMailto } from "@/lib/complaint";
 import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
@@ -40,6 +40,7 @@ export default function OutageMap() {
   const markersRef = useRef<Map<string, Marker>>(new Map());
   const searchMarkerRef = useRef<Marker | null>(null);
   const authoritiesRef = useRef<Authority[]>([]);
+  const reportsRef = useRef<ReportWithCounts[]>([]);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -105,12 +106,26 @@ export default function OutageMap() {
       if (m) {
         m.remove();
         markersRef.current.delete(id);
+        reportsRef.current = reportsRef.current.filter((r) => r.id !== id);
         setCount((c) => Math.max(0, c - 1));
       }
     };
 
+    const countNearby = (r: ReportWithCounts, radiusKm = 0.5): number => {
+      return reportsRef.current.filter(
+        (other) =>
+          other.id !== r.id &&
+          !other.resolved_at &&
+          haversineKm(
+            { lat: r.lat, lng: r.lng },
+            { lat: other.lat, lng: other.lng }
+          ) <= radiusKm
+      ).length;
+    };
+
     const addOrUpdate = (r: ReportWithCounts) => {
       if (markersRef.current.has(r.id)) return;
+      reportsRef.current.push(r);
       const el = document.createElement("div");
       el.style.width = "18px";
       el.style.height = "18px";
@@ -119,9 +134,19 @@ export default function OutageMap() {
       el.style.border = "2px solid white";
       el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
 
-      const popup = new Popup({ offset: 14, closeButton: false }).setDOMContent(
-        buildPopupContent(r, supabase, authoritiesRef.current)
-      );
+      // Build popup lazily on open so the nearby count reflects the latest
+      // realtime state, not the moment this marker was added.
+      const popup = new Popup({ offset: 14, closeButton: false });
+      popup.on("open", () => {
+        popup.setDOMContent(
+          buildPopupContent(
+            r,
+            supabase,
+            authoritiesRef.current,
+            countNearby(r)
+          )
+        );
+      });
       const marker = new Marker({ element: el })
         .setLngLat([r.lng, r.lat])
         .setPopup(popup)
@@ -229,7 +254,8 @@ type SupabaseClient = ReturnType<typeof getBrowserSupabase>;
 function buildPopupContent(
   r: ReportWithCounts,
   supabase: SupabaseClient,
-  authorities: Authority[]
+  authorities: Authority[],
+  nearbyCount: number
 ): HTMLElement {
   const root = document.createElement("div");
   root.style.minWidth = "200px";
@@ -269,6 +295,14 @@ function buildPopupContent(
         }</div>`
       : "";
 
+  const clusterTotal = nearbyCount + 1;
+  const reliabilityLine =
+    clusterTotal >= 3
+      ? `<div style="margin-top:6px;font-size:11px;color:#15803D;background:#ECFDF5;border:1px solid #BBF7D0;padding:4px 6px;border-radius:4px"><strong>${clusterTotal} reports within 500m</strong> &middot; high confidence</div>`
+      : clusterTotal === 2
+      ? `<div style="margin-top:6px;font-size:11px;color:#155875;background:#EFF8FB;border:1px solid #D5ECF4;padding:4px 6px;border-radius:4px"><strong>2 reports within 500m</strong> &middot; partial confirmation</div>`
+      : `<div style="margin-top:6px;font-size:11px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;padding:4px 6px;border-radius:4px">Single report &middot; confirm with neighbours below</div>`;
+
   root.innerHTML = `
     <strong>${SEVERITY_LABEL[r.severity]}</strong><br/>
     <span style="color:#475569;font-size:12px">${
@@ -276,6 +310,7 @@ function buildPopupContent(
     }${r.municipality ? escapeHTML(r.municipality) : ""}</span><br/>
     <span style="color:#94a3b8;font-size:11px">${new Date(r.created_at).toLocaleString()}</span>
     ${causeLine}
+    ${reliabilityLine}
     ${predictionLine}
     ${countsLine}
     ${r.note ? `<p style="margin-top:6px;font-size:13px">${escapeHTML(r.note)}</p>` : ""}

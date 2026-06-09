@@ -1,5 +1,5 @@
-const CACHE = "amanzi-alert-v2";
-const APP_SHELL = ["/", "/report", "/feed", "/stats", "/mine", "/about", "/manifest.webmanifest"];
+const CACHE = "amanzi-alert-v3";
+const APP_SHELL = ["/", "/map", "/report", "/stats", "/mine", "/about", "/manifest.webmanifest"];
 const QUEUE_STORE = "offline-reports";
 
 self.addEventListener("install", (event) => {

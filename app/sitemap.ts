@@ -13,10 +13,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${SITE_URL}/feed`,
+      url: `${SITE_URL}/map`,
       lastModified: now,
       changeFrequency: "hourly",
-      priority: 0.9,
+      priority: 0.95,
     },
     {
       url: `${SITE_URL}/stats`,

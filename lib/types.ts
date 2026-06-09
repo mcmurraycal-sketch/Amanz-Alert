@@ -51,6 +51,7 @@ export type Report = {
   photo_url: string | null;
   municipality: string | null;
   suburb: string | null;
+  province: string | null;
   resolved_at: string | null;
 };
 
@@ -86,5 +87,6 @@ export type ReportInsert = {
   photo_url?: string | null;
   municipality?: string | null;
   suburb?: string | null;
+  province?: string | null;
   reporter_fingerprint?: string | null;
 };

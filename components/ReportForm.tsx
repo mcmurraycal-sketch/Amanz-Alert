@@ -89,6 +89,7 @@ export default function ReportForm() {
           note: note.trim() || null,
           suburb: label?.suburb || null,
           municipality: label?.municipality || null,
+          province: label?.province || null,
           reporter_fingerprint: getOrCreateFingerprint(),
         })
         .select("id")

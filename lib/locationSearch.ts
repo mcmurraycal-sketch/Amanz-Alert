@@ -81,6 +81,7 @@ function parseMTFeature(f: MTFeature): LocationHit {
     label: {
       suburb: suburb || (isAddress ? null : street) || null,
       municipality: municipality || null,
+      province: region || null,
     },
   };
 }
@@ -165,6 +166,7 @@ function parseNominatim(r: NominatimResult): LocationHit {
     label: {
       suburb: place || street || null,
       municipality: municipality,
+      province: region,
     },
   };
 }
@@ -234,6 +236,7 @@ function parsePhoton(f: PhotonFeature): LocationHit {
     label: {
       suburb: place || p.street || null,
       municipality,
+      province: region,
     },
   };
 }

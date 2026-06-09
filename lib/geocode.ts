@@ -1,6 +1,7 @@
 export type GeoLabel = {
   suburb: string | null;
   municipality: string | null;
+  province: string | null;
 };
 
 type GeocodeFeature = {
@@ -12,34 +13,49 @@ type GeocodeFeature = {
 };
 
 export async function reverseGeocode(lat: number, lng: number): Promise<GeoLabel> {
+  const empty: GeoLabel = { suburb: null, municipality: null, province: null };
   const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
-  if (!key) return { suburb: null, municipality: null };
+  if (!key) return empty;
 
   try {
     const url = `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${encodeURIComponent(
       key
     )}&limit=1&language=en`;
     const res = await fetch(url);
-    if (!res.ok) return { suburb: null, municipality: null };
+    if (!res.ok) return empty;
     const data = (await res.json()) as { features?: GeocodeFeature[] };
 
     const feature = data.features?.[0];
-    if (!feature) return { suburb: null, municipality: null };
+    if (!feature) return empty;
 
     const suburb = feature.text || null;
-
     const context = feature.context || [];
-    const muniCtx = context.find(
-      (c) =>
-        c.id.startsWith("municipality") ||
-        c.id.startsWith("place") ||
-        c.id.startsWith("subregion") ||
-        c.id.startsWith("region")
-    );
 
-    return { suburb, municipality: muniCtx?.text || null };
+    let municipality: string | null = null;
+    let province: string | null = null;
+
+    for (const c of context) {
+      const id = c.id || "";
+      if (
+        !municipality &&
+        (id.startsWith("municipality") ||
+          id.startsWith("place") ||
+          id.startsWith("subregion"))
+      ) {
+        municipality = c.text;
+      }
+      if (!province && id.startsWith("region")) {
+        province = c.text;
+      }
+    }
+
+    // If we never resolved a municipality, fall back to the region as a last
+    // resort so the report at least carries something usable.
+    if (!municipality && province) municipality = province;
+
+    return { suburb, municipality, province };
   } catch {
-    return { suburb: null, municipality: null };
+    return empty;
   }
 }
 
