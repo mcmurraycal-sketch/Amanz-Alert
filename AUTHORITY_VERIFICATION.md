@@ -34,29 +34,104 @@ For each row:
 | # | Authority | Website | Current DB email | Status | Verified date | Notes |
 |---|---|---|---|---|---|---|
 | 1 | Makana Local Municipality (pilot) | https://www.makana.gov.za | customercare@makana.gov.za | ⚠️ | 2026-06-07 | Official site lists ZERO email addresses. Verified phone numbers: Water & Sanitation 046 603 6140 / 6069; Customer Care hotline 080 111 6134; Switchboard 046 603 6111. The seed email is an unverified best-guess pattern. Keep with a clear note; recommend the resident also call. |
-| 2 | City of Cape Town | https://www.capetown.gov.za | customer.feedback@capetown.gov.za | ⬜ | | |
-| 3 | City of Johannesburg | https://www.joburg.org.za | customercare@joburg.org.za | ⬜ | | |
-| 4 | City of Tshwane (Pretoria) | https://www.tshwane.gov.za | — (not seeded) | ⬜ | | |
-| 5 | eThekwini Metropolitan Municipality (Durban) | https://www.durban.gov.za | — (not seeded) | ⬜ | | |
-| 6 | Ekurhuleni Metropolitan Municipality | https://www.ekurhuleni.gov.za | — (not seeded) | ⬜ | | |
-| 7 | Buffalo City Metropolitan Municipality (East London) | https://www.buffalocity.gov.za | — (not seeded) | ⬜ | | |
-| 8 | Nelson Mandela Bay (Gqeberha) | https://www.nelsonmandelabay.gov.za | — (not seeded) | ⬜ | | |
-| 9 | Mangaung Metropolitan Municipality (Bloemfontein) | https://www.mangaung.co.za | — (not seeded) | ⬜ | | |
+| 2 | City of Cape Town | https://www.capetown.gov.za | water@capetown.gov.za | ✅ | 2026-06-09 | Verified on capetown.gov.za/Contact-us. Water & Sanitation section. CC: contact.us@capetown.gov.za. Also has 0860 103 089 hotline. |
+| 3 | City of Johannesburg | https://www.johannesburgwater.co.za | fault@jwater.co.za | ✅ | 2026-06-09 | Verified on johannesburgwater.co.za/contact-us/. Joburg Water SOC handles water; fault@ is for water incidents specifically. Call centre: 011 688 1699. |
+| 4 | City of Tshwane (Pretoria) | https://www.tshwane.gov.za | customercare@tshwane.gov.za | ✅ | 2026-06-09 | Verified on tshwane.gov.za. CC: waterleaks@tshwane.gov.za for water-specific faults. Toll-free: 080 111 1556. |
+| 5 | eThekwini Metropolitan Municipality (Durban) | https://www.durban.gov.za | eservices@durban.gov.za | ✅ | 2026-06-09 | Verified on durban.gov.za + official eThekwini social media. Also: WhatsApp 073 148 3477; fault line 080 131 3013. |
+| 6 | Ekurhuleni Metropolitan Municipality | https://www.ekurhuleni.gov.za | customercare@ekurhuleni.gov.za | ✅ | 2026-06-09 | Verified on ekurhuleni.gov.za. CC: water@ekurhuleni.gov.za. Call centre: 0860 543 000. |
+| 7 | Buffalo City Metropolitan Municipality (East London) | https://www.buffalocity.gov.za | faultreport@buffalocity.gov.za | ✅ | 2026-06-09 | Verified on buffalocity.gov.za contact page. Fault reporting line: 086 111 3017. |
+| 8 | Nelson Mandela Bay (Gqeberha) | https://www.nelsonmandelabay.gov.za | customercare@mandelametro.gov.za | ✅ | 2026-06-09 | Verified on municipalities.co.za contact directory. CC: waterleaks@mandelametro.gov.za. Call centre: 041 506 5555. |
+| 9 | Mangaung Metropolitan Municipality (Bloemfontein) | https://www.mangaung.co.za | enquiry@mangaung.co.za | ✅ | 2026-06-09 | Verified on mangaung.co.za/contact-us. Toll-free: 0800 111 300. WhatsApp (text only): 065 586 6261. |
 
 ## Tier 2 — National + provincial DWS offices
 
 | # | Authority | Website | Current DB email | Status | Verified date | Notes |
 |---|---|---|---|---|---|---|
-| 10 | Department of Water and Sanitation (national) | https://www.dws.gov.za | info@dws.gov.za | ⬜ | | |
-| 11 | DWS Eastern Cape | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 12 | DWS Western Cape | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 13 | DWS Gauteng | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 14 | DWS KwaZulu-Natal | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 15 | DWS Free State | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 16 | DWS Limpopo | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 17 | DWS Mpumalanga | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 18 | DWS North West | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
-| 19 | DWS Northern Cape | https://www.dws.gov.za | — (not seeded) | ⬜ | | |
+| 10 | Department of Water and Sanitation (national) | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | Verified on dws.gov.za/CustomerCare/ContactUs.aspx. Updated from info@ to customercare@ — the actual complaints intake. Toll-free: 0800 200 200. |
+| 11 | DWS Eastern Cape | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email — all route through national customercare@. Regional phone: (043) 604 5400. Office: 2 Hargreaves Ave, King William's Town. |
+| 12 | DWS Western Cape | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (021) 941 6000. Office: 52 Voortrekker Rd, Bellville. |
+| 13 | DWS Gauteng | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (012) 392 1300. Office: 285 Francis Baard St, Pretoria. |
+| 14 | DWS KwaZulu-Natal | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (031) 336 2700. Office: 88 Joe Slovo St, Durban. |
+| 15 | DWS Free State | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (051) 405 9000. Office: Bloem Plaza, Charlotte Maxeke St, Bloemfontein. |
+| 16 | DWS Limpopo | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (015) 290 1200. Office: Azmo Place, 49 Joubert St, Polokwane. |
+| 17 | DWS Mpumalanga | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (013) 759 7300. Office: Prorom Building, Nelspruit. |
+| 18 | DWS North West | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (018) 387 9500. Office: Mega City Complex, Mmabatho. |
+| 19 | DWS Northern Cape | https://www.dws.gov.za | customercare@dws.gov.za | ✅ | 2026-06-09 | No separate provincial email. Regional phone: (053) 830 8800. Office: 28 Central Rd, Kimberley. |
+
+## Tier 3 — Wave 2 expansion (2026-06-09)
+
+### Eastern Cape — neighbours of Makana + districts
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Ndlambe (Port Alfred) | complaints@ndlambe.gov.za | ✅ | ndlambe.gov.za/contact + municipalities.co.za. CC: info@ndlambe.gov.za. WhatsApp 073 384 0437. |
+| Kouga (Jeffreys Bay) | registry@kouga.gov.za | ✅ | kouga.gov.za. Emergency 042 291 0250. |
+| Dr Beyers Naudé (Graaff-Reinet) | danielse@bnlm.gov.za | ✅ | bnlm.gov.za/contacts. Customer Care line; CC mmoffice@bnlm.gov.za. |
+| Amathole District (East London) | info@amathole.gov.za | ✅ | amathole.gov.za + municipalities.co.za. Customer Care: sibom@amathole.gov.za. |
+| Chris Hani District (Komani) | email@chrishanidm.gov.za | ✅ | chrishanidm.gov.za. CC: communications@. Provides water via 8 satellite offices. |
+| OR Tambo District (Mthatha) | info@ortambodm.gov.za | ✅ | ortambodm.gov.za/contact. Infrastructure/Water Services dept routes through main. |
+| Blue Crane Route (Somerset East) | — | ❌ | No public email on bcrm.gov.za. Phone-only: 042 243 6400. Same problem as Makana. |
+
+### Western Cape
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Drakenstein (Paarl) | customercare@drakenstein.gov.za | ✅ | drakenstein.gov.za/contact-us. Water line 021 807 4715. |
+| Stellenbosch | engineering.services@stellenbosch.gov.za | ✅ | stellenbosch.gov.za. Infrastructure Directorate. |
+| George | gmun@george.gov.za | ✅ | george.gov.za/contact. After-hours 044 801 6300. |
+| Saldanha Bay (Vredenburg) | mun@sbm.gov.za | ✅ | sbm.gov.za/contact. Call centre 022 701 7061. |
+| Knysna | customercare@knysna.gov.za | ✅ | knysna.gov.za. CC: knysna@knysna.gov.za. Water leak line 044 302 6331. |
+| Mossel Bay | spietersen@mosselbay.gov.za | ✅ | mosselbay.gov.za. Direct contact for water complaints. |
+
+### KwaZulu-Natal
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Msunduzi (Pietermaritzburg) | Billing@msunduzi.gov.za | ✅ | msunduzi.gov.za. CC: municipal.manager@. Toll-free 0800 001 868. |
+| uMhlathuze (Richards Bay) | talk2us@umhlathuze.gov.za | ✅ | umhlathuze.gov.za. Call centre 0800 222 827. |
+| Newcastle | dumisani.thabethe@newcastle.gov.za | ✅ | municipalities.co.za. Direct: Water Services Manager. CC: mm@newcastle.gov.za. |
+
+### Gauteng (locals)
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Emfuleni (Vereeniging) | customercare@emfuleni.gov.za | ✅ | emfuleni.gov.za. CC: madoda@ (Metsi-a-Lekoa water services Chief Director). |
+| Mogale City (Krugersdorp) | watercomplaints@mogalecity.gov.za | ✅ | mogalecity.gov.za + verified on official Facebook. Water-specific email. |
+
+### Limpopo
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Polokwane | billingc@polokwane.gov.za | ⚠️ | polokwane.gov.za. Only public email is billing — water complaints route through phone (015 290 2376) + WhatsApp (068 290 8736). Email is fallback. |
+
+### North West
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Rustenburg | zmateta@rustenburg.gov.za | ✅ | municipalities.co.za. Direct: water department head. CC: munman@ (Service Delivery). |
+| Madibeng (Brits) | ilsebrits@madibeng.gov.za | ✅ | madibeng.gov.za. Water & Sanitation Services direct contact. CC: customercare@. |
+
+### Mpumalanga
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| City of Mbombela (Nelspruit) | customercare@mbombela.gov.za | ✅ | mbombela.gov.za. CC: info@. |
+| Govan Mbeki (Secunda) | callcentre@govanmbeki.gov.za | ✅ | govanmbeki.gov.za. WhatsApp 083 790 0659. |
+| Steve Tshwete (Middelburg) | council@stlm.gov.za | ✅ | stlm.gov.za/contact. |
+
+### Northern Cape
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Sol Plaatje (Kimberley) | info@solplaatje.org.za | ✅ | solplaatje.org.za + kimberley.org.za. SMS reporting 44204. |
+
+### Free State
+
+| Authority | Email | Status | Source |
+|---|---|---|---|
+| Matjhabeng (Welkom) | info@matjhabeng.co.za | ✅ | matjhabengmunicipality.co.za/ContactUs. |
+
+---
 
 ## Oversight (already verified)
 
