@@ -1,6 +1,8 @@
 import type { Severity, Cause } from "./types";
 import { SEVERITY_LABEL, CAUSE_LABEL } from "./types";
 import type { ComplaintRouting } from "./authorities";
+import type { MailMessage } from "./mailProviders";
+import { buildProviderUrl } from "./mailProviders";
 
 const DEFAULT_APP_URL = "https://amanz-alert.vercel.app";
 
@@ -23,10 +25,10 @@ type ComplaintReport = {
   created_at: string;
 };
 
-export function buildComplaintMailto(
+export function buildComplaintMessage(
   r: ComplaintReport,
   routing?: ComplaintRouting
-): string {
+): MailMessage {
   const where =
     [r.suburb, r.municipality].filter(Boolean).join(", ") ||
     `coordinates ${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`;
@@ -79,12 +81,17 @@ A copy of this complaint is being kept in the public interest via Amanz' Alert (
 Yours sincerely,
 A concerned resident`;
 
-  const to = routing ? routing.to.join(",") : "";
-  const ccParam =
-    routing && routing.cc.length > 0
-      ? `&cc=${encodeURIComponent(routing.cc.join(","))}`
-      : "";
-  return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(
-    subject
-  )}${ccParam}&body=${encodeURIComponent(body)}`;
+  return {
+    to: routing ? routing.to : [],
+    cc: routing ? routing.cc : [],
+    subject,
+    body,
+  };
+}
+
+export function buildComplaintMailto(
+  r: ComplaintReport,
+  routing?: ComplaintRouting
+): string {
+  return buildProviderUrl("default", buildComplaintMessage(r, routing));
 }

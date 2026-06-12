@@ -83,6 +83,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "complaint.routes_to": "Routes to",
     "complaint.no_recipient":
       "No verified recipient yet — please add one in your email app before sending.",
+    "complaint.pick_mail": "Open complaint in…",
+    "complaint.current": "current",
     "prediction.label": "Typical resolution",
     "prediction.basis_one": "based on 1 prior outage here",
     "prediction.basis_many": "based on {n} prior outages here",
@@ -224,6 +226,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "complaint.routes_to": "Iya kwi",
     "complaint.no_recipient":
       "Akukho mthunzeli oqinisekisiweyo — nceda yongeze enye kwi-imeyile yakho phambi kokuyithumela.",
+    "complaint.pick_mail": "Vula isikhalazo ku…",
+    "complaint.current": "okwangoku",
     "prediction.label": "Ihlala isombululwa",
     "prediction.basis_one":
       "ngokusekelwe kwingxaki enye yangaphambili apha",
@@ -368,6 +372,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "complaint.count_one": "1 klagte ingedien",
     "complaint.count_many": "{n} klagtes ingedien",
     "complaint.routes_to": "Stuur na",
+    "complaint.pick_mail": "Open klagte in…",
+    "complaint.current": "huidig",
     "complaint.no_recipient":
       "Geen geverifieerde ontvanger nie — voeg een by in jou e-pos voor jy stuur.",
     "prediction.label": "Tipiese oplossing",
@@ -514,6 +520,8 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "complaint.routes_to": "Iya ku",
     "complaint.no_recipient":
       "Akukho othunyelwa oqinisekisiwe — sicela ungeze omunye kwi-imeyili yakho ngaphambi kokuthumela.",
+    "complaint.pick_mail": "Vula isikhalo ku…",
+    "complaint.current": "manje",
     "prediction.label": "Ukuxazululwa okuvamile",
     "prediction.basis_one":
       "ngokusekelwe kungabikho okwedlule okukodwa lapha",

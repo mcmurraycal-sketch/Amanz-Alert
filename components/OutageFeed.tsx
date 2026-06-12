@@ -6,8 +6,8 @@ import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { useT } from "@/lib/i18n";
 import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, formatPrediction, type ReportWithCounts } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
-import { buildComplaintMailto } from "@/lib/complaint";
 import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
+import ComplaintButton from "./ComplaintButton";
 import { getOrCreateFingerprint } from "@/lib/geo";
 import { haversineKm, type Coords } from "@/lib/geo";
 import { reverseGeocode, formatLocation } from "@/lib/geocode";
@@ -209,14 +209,13 @@ function FeedCard({
     severity: r.severity,
   });
   const routing = routeComplaint(authorities, r.municipality);
-  const complaintUrl = buildComplaintMailto(r, routing);
 
   const complaintLabel =
     r.complaint_count === 1
       ? t("complaint.count_one")
       : t("complaint.count_many").replace("{n}", String(r.complaint_count));
 
-  const onComplaintClick = () => {
+  const onComplaintSend = () => {
     void getBrowserSupabase()
       .from("complaints_filed")
       .insert({
@@ -285,13 +284,13 @@ function FeedCard({
           >
             📲 WhatsApp
           </a>
-          <a
-            href={complaintUrl}
-            onClick={onComplaintClick}
-            className="text-ink font-medium hover:underline ml-auto"
-          >
-            📨 {t("complaint.send")}
-          </a>
+          <ComplaintButton
+            report={r}
+            routing={routing}
+            onSend={onComplaintSend}
+            variant="compact"
+            className="ml-auto"
+          />
         </div>
         {routing.labels.length > 0 ? (
           <p className="text-[11px] text-ink/50 mt-1.5 leading-snug">

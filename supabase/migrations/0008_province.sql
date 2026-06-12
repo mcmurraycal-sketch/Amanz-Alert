@@ -8,11 +8,13 @@ alter table reports add column if not exists province text;
 create index if not exists reports_province_idx on reports (province);
 
 -- Rebuild dependent views in dependency order so we can insert the new column.
+-- Drop dependents BEFORE the views they depend on:
+-- reports_with_counts references outage_history_by_{suburb,municipality} and reports_public.
 drop view if exists scoreboard_by_province;
 drop view if exists scoreboard_by_suburb;
+drop view if exists reports_with_counts;
 drop view if exists outage_history_by_municipality;
 drop view if exists outage_history_by_suburb;
-drop view if exists reports_with_counts;
 drop view if exists reports_public;
 
 create view reports_public as

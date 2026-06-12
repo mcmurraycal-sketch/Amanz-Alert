@@ -12,7 +12,7 @@ import {
   type ReportWithCounts,
 } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
-import { buildComplaintMailto } from "@/lib/complaint";
+import ComplaintButton from "./ComplaintButton";
 import {
   loadAuthorities,
   routeComplaint,
@@ -162,7 +162,6 @@ function MyReportCard({
     severity: r.severity,
   });
   const routing = routeComplaint(authorities, r.municipality);
-  const complaintUrl = buildComplaintMailto(r, routing);
 
   const [stillOutClicked, setStillOutClicked] = useState(false);
   const [resolvedClicked, setResolvedClicked] = useState(false);
@@ -179,7 +178,7 @@ function MyReportCard({
       });
   };
 
-  const onComplaintClick = () => {
+  const onComplaintSend = () => {
     void getBrowserSupabase()
       .from("complaints_filed")
       .insert({
@@ -289,13 +288,13 @@ function MyReportCard({
               📲 WhatsApp
             </a>
             {!isResolved && (
-              <a
-                href={complaintUrl}
-                onClick={onComplaintClick}
-                className="text-ink font-medium hover:underline ml-auto"
-              >
-                📨 {t("complaint.send")}
-              </a>
+              <ComplaintButton
+                report={r}
+                routing={routing}
+                onSend={onComplaintSend}
+                variant="compact"
+                className="ml-auto"
+              />
             )}
           </div>
         </div>

@@ -5,7 +5,12 @@ import maplibregl, { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { EASTERN_CAPE_CENTER, getOrCreateFingerprint, haversineKm } from "@/lib/geo";
 import { buildWhatsAppShare } from "@/lib/share";
-import { buildComplaintMailto } from "@/lib/complaint";
+import { buildComplaintMessage } from "@/lib/complaint";
+import {
+  buildProviderUrl,
+  getPreferredProvider,
+  openMailComposer,
+} from "@/lib/mailProviders";
 import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
 import {
   ReportWithCounts,
@@ -373,9 +378,15 @@ function buildPopupContent(
   root.appendChild(share);
 
   const routing = routeComplaint(authorities, r.municipality);
+  const message = buildComplaintMessage(r, routing);
+  const preferred = getPreferredProvider() ?? "default";
 
   const complaint = document.createElement("a");
-  complaint.href = buildComplaintMailto(r, routing);
+  complaint.href = buildProviderUrl(preferred, message);
+  if (preferred !== "default") {
+    complaint.target = "_blank";
+    complaint.rel = "noopener noreferrer";
+  }
   complaint.style.display = "block";
   complaint.style.marginTop = "6px";
   complaint.style.background = "#0B1F3A";
@@ -387,7 +398,8 @@ function buildPopupContent(
   complaint.style.fontWeight = "600";
   complaint.style.textAlign = "center";
   complaint.textContent = "📨 Send official complaint";
-  complaint.onclick = () => {
+  complaint.onclick = (e) => {
+    e.preventDefault();
     supabase
       .from("complaints_filed")
       .insert({
@@ -395,6 +407,7 @@ function buildPopupContent(
         reporter_fingerprint: getOrCreateFingerprint(),
       })
       .then(() => {});
+    openMailComposer(preferred, message);
   };
   root.appendChild(complaint);
 

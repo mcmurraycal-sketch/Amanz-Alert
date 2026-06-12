@@ -6,8 +6,8 @@ import { getBrowserSupabase } from "@/lib/supabase-browser";
 import { Coords, getCurrentLocation, getOrCreateFingerprint, MAKHANDA } from "@/lib/geo";
 import { reverseGeocode, formatLocation, type GeoLabel } from "@/lib/geocode";
 import { buildWhatsAppShare } from "@/lib/share";
-import { buildComplaintMailto } from "@/lib/complaint";
 import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
+import ComplaintButton from "./ComplaintButton";
 import { useT } from "@/lib/i18n";
 import { Severity, Cause, CAUSES } from "@/lib/types";
 import LocationSearch from "./LocationSearch";
@@ -125,11 +125,8 @@ export default function ReportForm() {
             created_at: new Date().toISOString(),
           }
         : null;
-    const complaintUrl = complaintReport
-      ? buildComplaintMailto(complaintReport, routing)
-      : null;
 
-    const onComplaintClick = () => {
+    const onComplaintSend = () => {
       if (!submittedReportId) return;
       void getBrowserSupabase()
         .from("complaints_filed")
@@ -156,14 +153,13 @@ export default function ReportForm() {
           >
             <span aria-hidden>📲</span> {t("report.share_whatsapp")}
           </a>
-          {complaintUrl && (
-            <a
-              href={complaintUrl}
-              onClick={onComplaintClick}
-              className="flex-1 bg-ink hover:bg-ink/90 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
-            >
-              <span aria-hidden>📨</span> {t("complaint.send")}
-            </a>
+          {complaintReport && (
+            <ComplaintButton
+              report={complaintReport}
+              routing={routing}
+              onSend={onComplaintSend}
+              className="flex-1"
+            />
           )}
         </div>
 
@@ -172,7 +168,7 @@ export default function ReportForm() {
             <span className="font-medium">{t("complaint.routes_to")}:</span>{" "}
             {routing.labels.join(", ")}
           </p>
-        ) : authorities.length > 0 && complaintUrl ? (
+        ) : authorities.length > 0 && complaintReport ? (
           <p className="text-[11px] text-alert-500 leading-snug">
             {t("complaint.no_recipient")}
           </p>
