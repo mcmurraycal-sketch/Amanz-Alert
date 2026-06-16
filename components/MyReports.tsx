@@ -228,6 +228,23 @@ function MyReportCard({
             <p className="text-sm text-ink/80 mt-1.5">{r.note}</p>
           )}
 
+          {r.photo_url && (
+            <a
+              href={r.photo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-2 rounded-md overflow-hidden border border-slate-200 max-w-[200px]"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={r.photo_url}
+                alt=""
+                loading="lazy"
+                className="w-full h-24 object-cover"
+              />
+            </a>
+          )}
+
           {(r.still_out_count > 0 || r.complaint_count > 0) && (
             <div className="flex items-center gap-3 mt-2 text-xs">
               {r.still_out_count > 0 && (

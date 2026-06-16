@@ -44,6 +44,15 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "report.step2_hint":
       "Drag the red pin to the outage, or tap anywhere on the map to move it.",
     "report.note_placeholder": "e.g. Out since Monday morning, whole street.",
+    "report.q_photo": "Add a photo? (optional)",
+    "report.photo_hint":
+      "A photo of the tap, the meter, or visible damage makes your report much harder to ignore.",
+    "report.photo_add": "Take or upload a photo",
+    "report.photo_processing": "Compressing photo…",
+    "report.photo_remove": "Remove",
+    "report.photo_optional": "JPG, PNG, or WebP · ~2 MB max",
+    "report.photo_error":
+      "Couldn't read that file. Try a different photo or skip this step.",
     "report.submit": "Submit report",
     "report.submitting": "Submitting…",
     "report.anonymous": "Anonymous · No account needed · Free",
@@ -66,6 +75,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "cause.drought": "Drought / low supply",
     "cause.unknown": "I don't know",
     "feed.title": "Active outages",
+    "feed.photo_open": "Open photo full size",
     "feed.empty": "No active outages right now — that's good news.",
     "feed.history_one": "outage reported and resolved in the last 30 days.",
     "feed.history_many": "outages reported and resolved in the last 30 days.",
@@ -190,6 +200,15 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       "Rhuqa iphini elibomvu ukuya kanye apho kungekho manzi, okanye cofa naphi na kwimephu ukuze ulibeke khona.",
     "report.note_placeholder":
       "umzekelo: Amanzi awakho ukususela ngoMvulo kusasa, kwisitalato sonke.",
+    "report.q_photo": "Faka ifoto? (akunyanzelekanga)",
+    "report.photo_hint":
+      "Ifoto yempompo, yemitha, okanye yomonakalo obonakalayo yenza ingxelo yakho ibe nzima ukuyityeshela.",
+    "report.photo_add": "Thatha okanye ulayishe ifoto",
+    "report.photo_processing": "Kucinezelwa ifoto…",
+    "report.photo_remove": "Susa",
+    "report.photo_optional": "JPG, PNG, okanye WebP · ~2 MB ubukhulu",
+    "report.photo_error":
+      "Asikwazanga ukufunda loo fayile. Zama enye ifoto okanye utsibe eli nyathelo.",
     "report.submit": "Ngenisa ingxelo",
     "report.submitting": "Iyangeniswa…",
     "report.anonymous":
@@ -213,6 +232,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "cause.drought": "Imbalela",
     "cause.unknown": "Andazi",
     "feed.title": "Iingxaki zamanzi ezisebenzayo",
+    "feed.photo_open": "Vula ifoto ngobukhulu obupheleleyo",
     "feed.empty": "Akukho ngxaki zamanzi ngoku — zindaba ezintle ezo.",
     "feed.history_one": "ingxaki yamanzi yaxelwa yaza yacombululwa kwiintsuku ezi-30 ezidlulileyo.",
     "feed.history_many": "iingxaki zamanzi zaxelwa zaza zacombululwa kwiintsuku ezi-30 ezidlulileyo.",
@@ -342,6 +362,15 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       "Sleep die rooi pen na die onderbreking, of tik enige plek op die kaart om dit te verskuif.",
     "report.note_placeholder":
       "bv. Sonder water sedert Maandagoggend, die hele straat.",
+    "report.q_photo": "Voeg 'n foto by? (opsioneel)",
+    "report.photo_hint":
+      "'n Foto van die kraan, die meter, of sigbare skade maak jou verslag baie moeiliker om te ignoreer.",
+    "report.photo_add": "Neem of laai 'n foto op",
+    "report.photo_processing": "Foto word saamgepers…",
+    "report.photo_remove": "Verwyder",
+    "report.photo_optional": "JPG, PNG, of WebP · ~2 MB maks",
+    "report.photo_error":
+      "Kon nie daardie lêer lees nie. Probeer 'n ander foto of slaan hierdie stap oor.",
     "report.submit": "Stuur verslag",
     "report.submitting": "Stuur…",
     "report.anonymous": "Anoniem · Geen rekening · Gratis",
@@ -364,6 +393,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "cause.drought": "Droogte / lae voorraad",
     "cause.unknown": "Ek weet nie",
     "feed.title": "Aktiewe onderbrekings",
+    "feed.photo_open": "Maak foto in volle grootte oop",
     "feed.empty": "Geen aktiewe onderbrekings tans nie — goeie nuus.",
     "feed.history_one": "wateronderbreking gerapporteer en opgelos in die laaste 30 dae.",
     "feed.history_many": "wateronderbrekings gerapporteer en opgelos in die laaste 30 dae.",
@@ -492,6 +522,15 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       "Hudula iphini elibomvu lapho kungekho khona amanzi, noma cindezela noma ikuphi kwimephu ukuze ulisuse.",
     "report.note_placeholder":
       "isib. Akukho manzi kusukela ngoMsombuluko ekuseni, umgwaqo wonke.",
+    "report.q_photo": "Engeza isithombe? (kungakhethwa)",
+    "report.photo_hint":
+      "Isithombe sompompi, semitha, noma sokulimala okubonakalayo senza umbiko wakho kube nzima ukuwuziba.",
+    "report.photo_add": "Thatha noma layisha isithombe",
+    "report.photo_processing": "Sicindezela isithombe…",
+    "report.photo_remove": "Susa",
+    "report.photo_optional": "JPG, PNG, noma WebP · ~2 MB osikhulu",
+    "report.photo_error":
+      "Asikwazanga ukufunda leyo fayela. Zama esinye isithombe noma weqe lesi sinyathelo.",
     "report.submit": "Thumela umbiko",
     "report.submitting": "Iyathumela…",
     "report.anonymous": "Ungaziwa · Akukho i-akhawunti · Mahhala",
@@ -514,6 +553,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     "cause.drought": "Isomiso / amanzi aphansi",
     "cause.unknown": "Angazi",
     "feed.title": "Ukungabikho kwamanzi okusebenzayo",
+    "feed.photo_open": "Vula isithombe ngosayizi ogcwele",
     "feed.empty": "Akukho kungabikho kwamanzi okusebenzayo manje — izindaba ezinhle.",
     "feed.history_one": "ukungabikho kwamanzi okubikiwe nokuxazululwe ezinsukwini ezingu-30 ezedlule.",
     "feed.history_many": "ukungabikho kwamanzi okubikiwe nokuxazululwe ezinsukwini ezingu-30 ezedlule.",

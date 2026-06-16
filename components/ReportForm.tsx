@@ -12,6 +12,7 @@ import { useT } from "@/lib/i18n";
 import { Severity, Cause, CAUSES } from "@/lib/types";
 import LocationSearch from "./LocationSearch";
 import LocationPicker from "./LocationPicker";
+import { compressImage, uploadReportPhoto, type CompressedPhoto } from "@/lib/photoUpload";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
 
@@ -33,6 +34,38 @@ export default function ReportForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submittedReportId, setSubmittedReportId] = useState<string | null>(null);
   const [authorities, setAuthorities] = useState<Authority[]>([]);
+  const [photo, setPhoto] = useState<CompressedPhoto | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+
+  const onPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setPhotoError(null);
+    setPhotoProcessing(true);
+    try {
+      const next = await compressImage(file);
+      if (photo?.previewUrl) URL.revokeObjectURL(photo.previewUrl);
+      setPhoto(next);
+    } catch {
+      setPhotoError(t("report.photo_error"));
+    } finally {
+      setPhotoProcessing(false);
+    }
+  };
+
+  const clearPhoto = () => {
+    if (photo?.previewUrl) URL.revokeObjectURL(photo.previewUrl);
+    setPhoto(null);
+    setPhotoError(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (photo?.previewUrl) URL.revokeObjectURL(photo.previewUrl);
+    };
+  }, [photo?.previewUrl]);
 
   useEffect(() => {
     loadAuthorities(getBrowserSupabase()).then(setAuthorities);
@@ -80,6 +113,9 @@ export default function ReportForm() {
     setSubmitError(null);
     try {
       const supabase = getBrowserSupabase();
+      const photoUrl = photo
+        ? await uploadReportPhoto(supabase, photo.blob)
+        : null;
       const { data, error } = await supabase
         .from("reports")
         .insert({
@@ -91,6 +127,7 @@ export default function ReportForm() {
           suburb: label?.suburb || null,
           municipality: label?.municipality || null,
           province: label?.province || null,
+          photo_url: photoUrl,
           reporter_fingerprint: getOrCreateFingerprint(),
         })
         .select("id")
@@ -321,6 +358,50 @@ export default function ReportForm() {
           className="border-2 border-slate-200 rounded-lg p-3 text-sm focus:border-amanzi-500 outline-none"
         />
         <p className="text-xs text-ink/50 text-right">{note.length}/280</p>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="font-semibold mb-1">{t("report.q_photo")}</legend>
+        <p className="text-xs text-ink/60 -mt-1 mb-1">{t("report.photo_hint")}</p>
+        {photo ? (
+          <div className="relative rounded-lg overflow-hidden border border-slate-200">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photo.previewUrl}
+              alt=""
+              className="w-full h-48 object-cover"
+            />
+            <button
+              type="button"
+              onClick={clearPhoto}
+              className="absolute top-2 right-2 bg-black/60 text-white text-xs rounded-full px-3 py-1.5 backdrop-blur"
+            >
+              {t("report.photo_remove")}
+            </button>
+            <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] rounded px-2 py-1">
+              {Math.round(photo.bytes / 1024)} KB
+            </span>
+          </div>
+        ) : (
+          <label className="border-2 border-dashed border-slate-300 hover:border-amanzi-500 rounded-lg p-4 flex flex-col items-center justify-center gap-1 cursor-pointer transition text-sm text-ink/70">
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={onPhotoChange}
+              disabled={photoProcessing}
+              className="hidden"
+            />
+            <span aria-hidden className="text-2xl">📷</span>
+            <span className="font-medium text-ink">
+              {photoProcessing ? t("report.photo_processing") : t("report.photo_add")}
+            </span>
+            <span className="text-xs text-ink/50">{t("report.photo_optional")}</span>
+          </label>
+        )}
+        {photoError && (
+          <p className="text-xs text-alert-500">{photoError}</p>
+        )}
       </fieldset>
 
       {submitError && (

@@ -312,6 +312,9 @@ function buildPopupContent(
       ? `<div style="margin-top:6px;font-size:11px;color:#155875;background:#EFF8FB;border:1px solid #D5ECF4;padding:4px 6px;border-radius:4px"><strong>2 reports within 500m</strong> &middot; partial confirmation</div>`
       : `<div style="margin-top:6px;font-size:11px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;padding:4px 6px;border-radius:4px">Single report &middot; confirm with neighbours below</div>`;
 
+  const photoLine = r.photo_url
+    ? `<a href="${escapeHTML(r.photo_url)}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px;border-radius:6px;overflow:hidden;border:1px solid #e2e8f0;max-width:200px"><img src="${escapeHTML(r.photo_url)}" alt="" loading="lazy" style="display:block;width:100%;height:96px;object-fit:cover" /></a>`
+    : "";
   root.innerHTML = `
     <strong>${SEVERITY_LABEL[r.severity]}</strong><br/>
     <span style="color:#475569;font-size:12px">${
@@ -323,6 +326,7 @@ function buildPopupContent(
     ${predictionLine}
     ${countsLine}
     ${r.note ? `<p style="margin-top:6px;font-size:13px">${escapeHTML(r.note)}</p>` : ""}
+    ${photoLine}
   `;
 
   const btnRow = document.createElement("div");
