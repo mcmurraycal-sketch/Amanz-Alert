@@ -32,11 +32,21 @@ export default function OutageFeed() {
   const [reports, setReports] = useState<ReportWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [authorities, setAuthorities] = useState<Authority[]>([]);
+  const [recentCount30d, setRecentCount30d] = useState<number | null>(null);
   const [filterCenter, setFilterCenter] = useState<Coords | null>(null);
   const [filterLabel, setFilterLabel] = useState<string | null>(null);
 
   useEffect(() => {
     loadAuthorities(getBrowserSupabase()).then(setAuthorities);
+  }, []);
+
+  useEffect(() => {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    getBrowserSupabase()
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since)
+      .then(({ count }) => setRecentCount30d(count ?? 0));
   }, []);
 
   const visibleReports = useMemo(() => {
@@ -120,7 +130,6 @@ export default function OutageFeed() {
 
   const searchBar = (
     <div className="px-4 pb-3 flex flex-col gap-2">
-      <p className="text-xs text-ink/60">{t("feed.step1_hint")}</p>
       <LocationSearch
         placeholder={t("search.placeholder_feed")}
         onSelect={(hit) => {
@@ -168,14 +177,37 @@ export default function OutageFeed() {
 
   if (visibleReports.length === 0) {
     const msg = filterCenter ? t("feed.no_nearby") : t("feed.empty");
+    const hasHistory = recentCount30d !== null && recentCount30d > 0;
     return (
       <>
         {searchBar}
-        <div className="text-center py-20 px-4">
+        <div className="text-center py-16 px-4">
           <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl mb-4">
             ✓
           </div>
-          <p className="text-ink/60">{msg}</p>
+          <p className="text-ink/70 font-medium">{msg}</p>
+          {hasHistory && (
+            <p className="text-xs text-ink/50 mt-2">
+              {recentCount30d}{" "}
+              {recentCount30d === 1
+                ? t("feed.history_one")
+                : t("feed.history_many")}
+            </p>
+          )}
+          <div className="mt-6 flex flex-col gap-2 max-w-xs mx-auto">
+            <Link
+              href="/report"
+              className="bg-alert-500 hover:bg-alert-600 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
+            >
+              <span aria-hidden>+</span> {t("feed.cta_report")}
+            </Link>
+            <Link
+              href="/stats"
+              className="text-amanzi-600 underline text-sm py-1"
+            >
+              {t("feed.cta_history")} →
+            </Link>
+          </div>
         </div>
       </>
     );

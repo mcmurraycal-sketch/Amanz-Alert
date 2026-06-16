@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n";
 
-const HIDDEN_ROUTES = ["/report"];
+const HIDDEN_ROUTES = ["/report", "/about", "/mine", "/stats"];
 
 export default function FloatingActions() {
   const pathname = usePathname();

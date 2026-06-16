@@ -53,6 +53,7 @@ export default function ReportForm() {
         if (!cancelled) {
           setLocationError(err.message);
           setCoords(MAKHANDA);
+          setLocMode("search");
         }
       })
       .finally(() => !cancelled && setLocating(false));

@@ -57,8 +57,12 @@ export default function OutageMap() {
       style: key ? MAP_STYLE(key) : FALLBACK_STYLE,
       center: [EASTERN_CAPE_CENTER.lng, EASTERN_CAPE_CENTER.lat],
       zoom: 7,
-      attributionControl: { compact: true },
+      attributionControl: false,
     });
+    map.addControl(
+      new maplibregl.AttributionControl({ compact: true }),
+      "bottom-left"
+    );
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(
       new maplibregl.GeolocateControl({

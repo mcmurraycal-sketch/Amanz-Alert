@@ -16,3 +16,9 @@ body {
   box-shadow: 0 10px 25px rgba(11, 31, 58, 0.15);
   border: 1px solid #E2E8F0;
 }
+
+/* Lift the bottom-left attribution above the floating action buttons so it
+   stays legible and the OSM/MapTiler license remains visible. */
+.maplibregl-ctrl-bottom-left {
+  bottom: 72px !important;
+}

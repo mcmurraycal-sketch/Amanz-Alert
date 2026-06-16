@@ -31,10 +31,26 @@ type Window = "30d" | "90d";
 function formatDowntime(seconds: number): string {
   if (seconds <= 0) return "—";
   const hours = seconds / 3600;
-  if (hours < 24) return `${Math.round(hours)} h`;
+  if (hours < 24) {
+    const h = Math.round(hours);
+    return `${h} h`;
+  }
   const days = hours / 24;
-  if (days < 14) return `${Math.round(days * 10) / 10} days`;
-  return `${Math.round(days)} days`;
+  const rounded = days < 14 ? Math.round(days * 10) / 10 : Math.round(days);
+  return `${rounded} ${rounded === 1 ? "day" : "days"}`;
+}
+
+// Reverse-geocoders sometimes return road names (e.g. "R350 (northbound)",
+// "Voortrekker Street") as the "suburb" when no real locality is found.
+// Hide these from the public scoreboard so the data reads cleanly.
+function looksLikeRoadNotSuburb(name: string): boolean {
+  const n = name.trim();
+  return (
+    /^[NRMP]\d+\b/i.test(n) || // N1, R350, M27 etc.
+    /\b(Road|Street|Avenue|Drive|Lane|Highway|Freeway|Boulevard|Way|Crescent|Close)\b/i.test(
+      n
+    )
+  );
 }
 
 export default function StatsScoreboard() {
@@ -70,6 +86,7 @@ export default function StatsScoreboard() {
   const sortedProvinces = useMemo(() => {
     const key = window === "30d" ? "downtime_seconds_30d" : "downtime_seconds_90d";
     return [...provinceRows]
+      .filter((r) => r.province && r.province !== "Unknown")
       .filter((r) =>
         window === "30d" ? r.outage_count_30d > 0 : r.outage_count_90d > 0
       )
@@ -79,6 +96,7 @@ export default function StatsScoreboard() {
   const visibleSuburbs = useMemo(() => {
     const key = window === "30d" ? "downtime_seconds_30d" : "downtime_seconds_90d";
     return suburbRows
+      .filter((r) => !looksLikeRoadNotSuburb(r.suburb))
       .filter((r) =>
         window === "30d" ? r.outage_count_30d > 0 : r.outage_count_90d > 0
       )
@@ -287,7 +305,7 @@ export default function StatsScoreboard() {
                     <th className="text-left px-3 py-2 font-medium">
                       {t("stats.col_suburb")}
                     </th>
-                    <th className="text-left px-3 py-2 font-medium hidden sm:table-cell">
+                    <th className="text-left px-3 py-2 font-medium">
                       {t("stats.col_municipality")}
                     </th>
                     <th className="text-left px-3 py-2 font-medium hidden md:table-cell">
@@ -319,7 +337,7 @@ export default function StatsScoreboard() {
                       >
                         <td className="px-3 py-2 text-ink/50 font-mono">{i + 1}</td>
                         <td className="px-3 py-2 font-medium text-ink">{r.suburb}</td>
-                        <td className="px-3 py-2 text-ink/70 hidden sm:table-cell">
+                        <td className="px-3 py-2 text-ink/70 text-xs sm:text-sm">
                           {r.municipality ?? "—"}
                         </td>
                         <td className="px-3 py-2 text-ink/70 hidden md:table-cell">
