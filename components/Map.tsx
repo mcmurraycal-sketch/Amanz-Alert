@@ -359,7 +359,7 @@ function buildPopupContent(
         kind,
         reporter_fingerprint: getOrCreateFingerprint(),
       });
-      btn.textContent = error ? "Already counted" : "✓ Counted";
+      btn.textContent = error ? "Already counted" : "Counted";
     };
     return btn;
   };
@@ -382,7 +382,7 @@ function buildPopupContent(
   share.style.textDecoration = "none";
   share.style.fontWeight = "600";
   share.style.textAlign = "center";
-  share.textContent = "📲 Share on WhatsApp";
+  share.textContent = "Share on WhatsApp";
   root.appendChild(share);
 
   const routing = routeComplaint(authorities, r.municipality);
@@ -405,7 +405,7 @@ function buildPopupContent(
   complaint.style.textDecoration = "none";
   complaint.style.fontWeight = "600";
   complaint.style.textAlign = "center";
-  complaint.textContent = "📨 Send official complaint";
+  complaint.textContent = "Send official complaint";
   complaint.onclick = (e) => {
     e.preventDefault();
     supabase

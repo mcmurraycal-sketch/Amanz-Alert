@@ -8,6 +8,7 @@ import { SEVERITY_COLOR, SEVERITY_LABEL, CAUSE_LABEL, formatPrediction, type Rep
 import { buildWhatsAppShare } from "@/lib/share";
 import { loadAuthorities, routeComplaint, type Authority } from "@/lib/authorities";
 import ComplaintButton from "./ComplaintButton";
+import { Check, Share, Plus } from "./icons";
 import { getOrCreateFingerprint } from "@/lib/geo";
 import { haversineKm, type Coords } from "@/lib/geo";
 import { reverseGeocode, formatLocation } from "@/lib/geocode";
@@ -182,8 +183,8 @@ export default function OutageFeed() {
       <>
         {searchBar}
         <div className="text-center py-16 px-4">
-          <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl mb-4">
-            ✓
+          <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 mx-auto grid place-items-center mb-4">
+            <Check size={30} />
           </div>
           <p className="text-ink/70 font-medium">{msg}</p>
           {hasHistory && (
@@ -199,7 +200,7 @@ export default function OutageFeed() {
               href="/report"
               className="bg-alert-500 hover:bg-alert-600 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
             >
-              <span aria-hidden>+</span> {t("feed.cta_report")}
+              <Plus size={18} /> {t("feed.cta_report")}
             </Link>
             <Link
               href="/stats"
@@ -330,9 +331,9 @@ function FeedCard({
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-green-600 font-medium hover:underline"
+            className="inline-flex items-center gap-1 text-green-600 font-medium hover:underline"
           >
-            📲 WhatsApp
+            <Share size={13} /> WhatsApp
           </a>
           <ComplaintButton
             report={r}

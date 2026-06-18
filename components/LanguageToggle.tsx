@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LANG_NAMES, LANG_ORDER, useT, type Lang } from "@/lib/i18n";
+import { ChevronDown } from "./icons";
 
 export default function LanguageToggle() {
   const { lang, setLang } = useT();
@@ -27,7 +28,7 @@ export default function LanguageToggle() {
         aria-label="Switch language"
       >
         {lang.toUpperCase()}
-        <span aria-hidden className="text-[10px] opacity-70">▾</span>
+        <ChevronDown size={12} className="opacity-70" />
       </button>
       {open && (
         <ul

@@ -7,6 +7,18 @@ body {
   background: #F5F8FA;
   color: theme('colors.ink');
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: theme('colors.amanzi.100');
+  color: theme('colors.ink');
 }
 
 .maplibregl-map { font-family: inherit; }

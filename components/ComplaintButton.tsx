@@ -12,6 +12,7 @@ import {
 import { buildComplaintMessage } from "@/lib/complaint";
 import type { ComplaintRouting } from "@/lib/authorities";
 import type { Severity, Cause } from "@/lib/types";
+import { Megaphone, ChevronDown, Mail } from "./icons";
 
 type ComplaintReport = {
   id: string;
@@ -86,9 +87,9 @@ export default function ComplaintButton({
           type="button"
           onClick={() => (preferred ? send(preferred) : setOpen((o) => !o))}
           aria-expanded={open}
-          className="text-ink font-medium hover:underline text-xs"
+          className="inline-flex items-center gap-1 text-ink font-medium hover:underline text-xs"
         >
-          📨 {t("complaint.send")}
+          <Megaphone size={14} /> {t("complaint.send")}
         </button>
         {open && (
           <div
@@ -106,7 +107,7 @@ export default function ComplaintButton({
                 onClick={() => send(p.id)}
                 className="w-full text-left px-3 py-2.5 hover:bg-slate-50 active:bg-slate-100 flex items-center gap-2 text-sm border-b border-slate-100 last:border-0"
               >
-                <span aria-hidden>{p.icon}</span>
+                <Mail size={15} className="text-ink/45" />
                 <span className="text-ink flex-1">{p.label}</span>
                 {preferred === p.id && (
                   <span className="text-amanzi-600 text-[10px] font-medium">
@@ -130,7 +131,7 @@ export default function ComplaintButton({
             onClick={() => send(preferred)}
             className="flex-1 bg-ink hover:bg-ink/90 active:scale-95 transition text-white font-semibold rounded-l-lg py-3 px-4 flex items-center justify-center gap-2"
           >
-            <span aria-hidden>📨</span>
+            <Megaphone size={17} />
             <span>{t("complaint.send")}</span>
             {preferredLabel && (
               <span className="text-white/60 text-xs hidden sm:inline">
@@ -143,9 +144,9 @@ export default function ComplaintButton({
             onClick={() => setOpen((o) => !o)}
             aria-label="Choose mail provider"
             aria-expanded={open}
-            className="bg-ink hover:bg-ink/90 active:scale-95 transition text-white font-semibold rounded-r-lg px-3 border-l border-white/10"
+            className="bg-ink hover:bg-ink/90 active:scale-95 transition text-white rounded-r-lg px-3 border-l border-white/10 grid place-items-center"
           >
-            <span aria-hidden>▾</span>
+            <ChevronDown size={16} />
           </button>
         </div>
       ) : (
@@ -155,7 +156,7 @@ export default function ComplaintButton({
           aria-expanded={open}
           className="w-full bg-ink hover:bg-ink/90 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
         >
-          <span aria-hidden>📨</span> {t("complaint.send")}
+          <Megaphone size={17} /> {t("complaint.send")}
         </button>
       )}
 

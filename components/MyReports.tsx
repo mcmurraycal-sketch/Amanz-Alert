@@ -13,6 +13,7 @@ import {
 } from "@/lib/types";
 import { buildWhatsAppShare } from "@/lib/share";
 import ComplaintButton from "./ComplaintButton";
+import { Check, Share } from "./icons";
 import {
   loadAuthorities,
   routeComplaint,
@@ -213,8 +214,8 @@ function MyReportCard({
                 {timeAgo(r.created_at, t)}
               </span>
               {isResolved && (
-                <p className="text-[10px] font-medium text-green-600 mt-0.5">
-                  ✓ {t("mine.resolved_at")}
+                <p className="inline-flex items-center gap-1 text-[10px] font-medium text-green-600 mt-0.5">
+                  <Check size={11} /> {t("mine.resolved_at")}
                 </p>
               )}
             </div>
@@ -272,7 +273,13 @@ function MyReportCard({
                     : "bg-red-50 text-alert-600 border-red-100 hover:bg-red-100"
                 }`}
               >
-                {stillOutClicked ? `✓ ${t("mine.counted")}` : t("mine.still_out")}
+                {stillOutClicked ? (
+                  <span className="inline-flex items-center justify-center gap-1">
+                    <Check size={13} /> {t("mine.counted")}
+                  </span>
+                ) : (
+                  t("mine.still_out")
+                )}
               </button>
               <button
                 type="button"
@@ -284,7 +291,13 @@ function MyReportCard({
                     : "bg-green-50 text-green-700 border-green-100 hover:bg-green-100"
                 }`}
               >
-                {resolvedClicked ? `✓ ${t("mine.counted")}` : t("mine.water_back")}
+                {resolvedClicked ? (
+                  <span className="inline-flex items-center justify-center gap-1">
+                    <Check size={13} /> {t("mine.counted")}
+                  </span>
+                ) : (
+                  t("mine.water_back")
+                )}
               </button>
             </div>
           )}
@@ -300,9 +313,9 @@ function MyReportCard({
               href={shareUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 font-medium hover:underline"
+              className="inline-flex items-center gap-1 text-green-600 font-medium hover:underline"
             >
-              📲 WhatsApp
+              <Share size={13} /> WhatsApp
             </a>
             {!isResolved && (
               <ComplaintButton

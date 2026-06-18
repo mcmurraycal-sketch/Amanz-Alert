@@ -13,6 +13,7 @@ import { Severity, Cause, CAUSES } from "@/lib/types";
 import LocationSearch from "./LocationSearch";
 import LocationPicker from "./LocationPicker";
 import { compressImage, uploadReportPhoto, type CompressedPhoto } from "@/lib/photoUpload";
+import { Check, Share, MapPin, Search, Camera } from "./icons";
 
 const SEVERITIES: Severity[] = ["no_water", "low_pressure", "discolored", "intermittent"];
 
@@ -176,8 +177,8 @@ export default function ReportForm() {
 
     return (
       <div className="flex flex-col gap-4 text-center py-8">
-        <div className="w-16 h-16 rounded-full bg-green-100 mx-auto grid place-items-center text-3xl">
-          ✓
+        <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 mx-auto grid place-items-center">
+          <Check size={32} />
         </div>
         <h2 className="text-2xl font-bold">{t("report.thanks_title")}</h2>
         <p className="text-ink/70">{t("report.thanks_body")}</p>
@@ -189,7 +190,7 @@ export default function ReportForm() {
             rel="noopener noreferrer"
             className="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 transition text-white font-semibold rounded-lg py-3 px-4 flex items-center justify-center gap-2"
           >
-            <span aria-hidden>📲</span> {t("report.share_whatsapp")}
+            <Share size={17} /> {t("report.share_whatsapp")}
           </a>
           {complaintReport && (
             <ComplaintButton
@@ -257,7 +258,7 @@ export default function ReportForm() {
                 : "border-slate-200 hover:border-slate-300 text-ink/70"
             }`}
           >
-            📍 {t("report.loc_my")}
+            <span className="inline-flex items-center justify-center gap-1.5"><MapPin size={15} /> {t("report.loc_my")}</span>
           </button>
           <button
             type="button"
@@ -268,7 +269,7 @@ export default function ReportForm() {
                 : "border-slate-200 hover:border-slate-300 text-ink/70"
             }`}
           >
-            🔍 {t("report.loc_search")}
+            <span className="inline-flex items-center justify-center gap-1.5"><Search size={15} /> {t("report.loc_search")}</span>
           </button>
         </div>
 
@@ -392,7 +393,9 @@ export default function ReportForm() {
               disabled={photoProcessing}
               className="hidden"
             />
-            <span aria-hidden className="text-2xl">📷</span>
+            <span aria-hidden className="text-ink/40">
+              <Camera size={26} />
+            </span>
             <span className="font-medium text-ink">
               {photoProcessing ? t("report.photo_processing") : t("report.photo_add")}
             </span>

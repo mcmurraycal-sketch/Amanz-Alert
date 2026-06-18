@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Hanken_Grotesk } from "next/font/google";
 import Header from "@/components/Header";
 import InstallPrompt from "@/components/InstallPrompt";
 import OfflineBanner from "@/components/OfflineBanner";
@@ -6,6 +7,13 @@ import FloatingActions from "@/components/FloatingActions";
 import { LangProvider } from "@/lib/i18n";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+const hanken = Hanken_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-hanken",
+  display: "swap",
+});
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://amanz-alert.vercel.app";
@@ -120,7 +128,7 @@ const JSON_LD = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={hanken.variable}>
       <head>
         <script
           type="application/ld+json"

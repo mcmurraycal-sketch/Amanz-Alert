@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Check } from "./icons";
 
 export default function OfflineBanner() {
   const [online, setOnline] = useState(true);
@@ -46,9 +47,9 @@ export default function OfflineBanner() {
 
   if (justFlushed > 0) {
     return (
-      <div className="bg-green-600 text-white text-xs text-center py-1.5 px-3">
-        ✓ {justFlushed} queued report{justFlushed === 1 ? "" : "s"} submitted
-        successfully
+      <div className="bg-green-600 text-white text-xs py-1.5 px-3 flex items-center justify-center gap-1.5">
+        <Check size={13} /> {justFlushed} queued report
+        {justFlushed === 1 ? "" : "s"} submitted successfully
       </div>
     );
   }
